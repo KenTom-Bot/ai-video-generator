@@ -261,8 +261,8 @@ if analyze_btn:
     st.error("⚠️ Vui lòng tải lên ít nhất một ảnh sản phẩm!")
   else:
     with st.spinner(
-        "🤖 AI đang phân tích toàn bộ các góc ảnh sản phẩm, ưu tiên ghi chú và"
-        " viết kịch bản..."
+        "🤖 AI đang phân tích toàn bộ các góc ảnh sản phẩm, khóa chặt biến thể"
+        " Hot và viết kịch bản video dựng sẵn..."
     ):
       try:
         if "GEMINI_API_KEY" in st.secrets:
@@ -284,19 +284,27 @@ if analyze_btn:
         )
 
         prompt_text = f"""
-                Bạn là Giám đốc Sản xuất Video Quảng cáo AI chuyên nghiệp. Hãy phân tích toàn bộ các hình ảnh sản phẩm được cung cấp.
+                Bạn là Giám đốc Sản xuất Video Quảng cáo AI chuyên nghiệp cho các nền tảng Video ngắn (Reels, TikTok, Shorts - DẠNG VIDEO DỰNG SẴN, KHÔNG PHẢI LIVESTREAM). Hãy phân tích toàn bộ các hình ảnh sản phẩm được cung cấp.
                 {notes_instruction}
                 
-                Yêu cầu thực hiện trả về kết quả theo đúng định dạng các khối rõ ràng giống như các thẻ card bao gồm:
+                QUY TẮC VÀNG VỀ NGÔN TỪ (CỰC KỲ QUAN TRỌNG):
+                - Đây là VIDEO QUẢNG CÁO DỰNG SẴN, tuyệt đối KHÔNG dùng ngôn từ hiểu nhầm thành Livestream (Cấm dùng: "mọi người ơi", "vào giỏ hàng phiên live", "chấm điểm đi", "thả tim trên màn hình live", "giảm theo suất có hạn", "suất mua deal sốc").
+                - Thay vào đó, dùng văn phong review thực tế, tự nhiên của video ngắn: đánh trúng tâm lý, công năng, review chất vải/chất liệu, và mức ưu đãi chung của cửa hàng (ví dụ: "Săn sale giá hời", "Đang được trợ giá sâu", "Hàng chuẩn tận xưởng").
+                
+                YÊU CẦU QUAN TRỌNG VỀ BIẾN THỂ (HERO VARIANT):
+                - Phải xác định rõ biến thể bán chạy nhất (Hero Variant / Hot) dựa trên lượt bán, nhãn Hot hoặc vị trí trung tâm trong ảnh.
+                - TOÀN BỘ 3 kịch bản thoại sau đây BẮT BUỘC phải tập trung khai thác và sử dụng chính xác biến thể Hot đó làm tâm điểm, tuyệt đối không được tự ý đổi sang biến thể phụ.
+                
+                Định dạng kết quả trả về theo đúng các khối thẻ card rõ ràng:
                 1. PHẦN PHÂN TÍCH CHI TIẾT SẢN PHẨM (Chia thành 4 khối thẻ card dạng lưới 2 cột: 
                    - Thẻ 1: Chân dung Khách hàng & Hook 3s.
-                   - Thẻ 2: KOC Chuẩn Việt, Stylist & Khóa Màu.
+                   - Thẻ 2: KOC Chuẩn Việt, Stylist & Khóa Màu (Xác định rõ Hero Variant Hot ở đây).
                    - Thẻ 3: Giải phẫu Sản phẩm & Khóa Hình học 3D.
                    - Thẻ 4: Chuẩn Bối Cảnh & Mức Giá).
-                2. PHẦN 3 KỊCH BẢN THOẠI QUẢNG CÁO (Mỗi kịch bản hiển thị riêng biệt trong một khung thẻ card có tiêu đề rõ ràng, nhịp đọc nhanh dồn dập 32-42 từ/cảnh 8 giây, ngôn từ dân dã, cuốn hút):
+                2. PHẦN 3 KỊCH BẢN THOẠI QUẢNG CÁO (Mỗi kịch bản hiển thị riêng biệt trong một khung thẻ card có tiêu đề rõ ràng, nhịp đọc nhanh dồn dập 32-42 từ/cảnh 8 giây, ngôn từ dân dã, cuốn hút, chuẩn video ngắn dựng sẵn, luôn gắn liền với biến thể Hot đã xác định):
                    - Kịch bản 1: Góc Review Thực Tế / Xưởng tận gốc.
                    - Kịch bản 2: Góc Nỗi đau & Tình huống kịch tính.
-                   - Kịch bản 3: Góc Flash Sale / Săn Sale sốc.
+                   - Kịch bản 3: Góc Flash Sale / Săn Sale sốc (Dùng ưu đãi giá chung, không dùng giảm theo suất live).
                 """
         contents.append(prompt_text)
 
@@ -319,17 +327,17 @@ if st.session_state.generated_scripts:
   st.markdown("<br>", unsafe_allow_html=True)
   st.markdown(
       "<h2 style='text-align: center; color: #4F46E5;'>🔍 Phân Tích Chi Tiết"
-      " & Kịch Bản Quảng Cáo</h2>",
+      " & Kịch Bản Quảng Cáo (Video Dựng Sẵn)</h2>",
       unsafe_allow_html=True,
   )
   st.markdown(
       "<p style='text-align: center;'>Thông tin phân tích và các kịch bản được"
-      " hiển thị rõ ràng theo từng hàng/thẻ bên dưới:</p>",
+      " hiển thị rõ ràng theo từng hàng/thẻ bên dưới (Đã tối ưu chuẩn video ngắn,"
+      " không chứa từ ngữ livestream):</p>",
       unsafe_allow_html=True,
   )
   st.markdown("<br>", unsafe_allow_html=True)
 
-  # Hiển thị toàn bộ nội dung phân tích & kịch bản do AI trả về trong khung card giao diện đẹp
   st.markdown(
       '<div style="background-color: #F9FAFB; padding: 25px; border-radius:'
       ' 12px; border: 1px solid #E5E7EB;">',
@@ -345,7 +353,6 @@ if st.session_state.generated_scripts:
       unsafe_allow_html=True,
   )
 
-  # Bố trí 3 nút bấm tương ứng cho 3 kịch bản theo hàng ngang (columns)
   col_btn1, col_btn2, col_btn3 = st.columns(3)
 
   with col_btn1:
@@ -361,7 +368,7 @@ if st.session_state.generated_scripts:
 
           model = genai.GenerativeModel("gemini-3.8-flash")
           res_v = model.generate_content(
-              f"Dựa vào nội dung sau, hãy chia thành N phân cảnh (mỗi cảnh 8 giây) và xuất Prompt Veo 3 đồng bộ tuyệt đối cho Kịch bản 1:\n{st.session_state.generated_scripts}"
+              f"Dựa vào nội dung sau (video ngắn dựng sẵn, không phải live), hãy chia thành N phân cảnh (mỗi cảnh 8 giây) và xuất Prompt Veo 3 đồng bộ tuyệt đối, tuân thủ đúng biến thể Hot cho Kịch bản 1:\n{st.session_state.generated_scripts}"
           )
           st.session_state.veo_prompts = res_v.text
           st.success("✅ Đã xuất Prompt Veo 3 Kịch bản 1 thành công!")
@@ -382,7 +389,7 @@ if st.session_state.generated_scripts:
 
           model = genai.GenerativeModel("gemini-3.8-flash")
           res_v = model.generate_content(
-              f"Dựa vào nội dung sau, hãy chia thành N phân cảnh (mỗi cảnh 8 giây) và xuất Prompt Veo 3 đồng bộ tuyệt đối cho Kịch bản 2:\n{st.session_state.generated_scripts}"
+              f"Dựa vào nội dung sau (video ngắn dựng sẵn, không phải live), hãy chia thành N phân cảnh (mỗi cảnh 8 giây) và xuất Prompt Veo 3 đồng bộ tuyệt đối, tuân thủ đúng biến thể Hot cho Kịch bản 2:\n{st.session_state.generated_scripts}"
           )
           st.session_state.veo_prompts = res_v.text
           st.success("✅ Đã xuất Prompt Veo 3 Kịch bản 2 thành công!")
@@ -403,7 +410,7 @@ if st.session_state.generated_scripts:
 
           model = genai.GenerativeModel("gemini-3.8-flash")
           res_v = model.generate_content(
-              f"Dựa vào nội dung sau, hãy chia thành N phân cảnh (mỗi cảnh 8 giây) và xuất Prompt Veo 3 đồng bộ tuyệt đối cho Kịch bản 3:\n{st.session_state.generated_scripts}"
+              f"Dựa vào nội dung sau (video ngắn dựng sẵn, không phải live), hãy chia thành N phân cảnh (mỗi cảnh 8 giây) và xuất Prompt Veo 3 đồng bộ tuyệt đối, tuân thủ đúng biến thể Hot cho Kịch bản 3:\n{st.session_state.generated_scripts}"
           )
           st.session_state.veo_prompts = res_v.text
           st.success("✅ Đã xuất Prompt Veo 3 Kịch bản 3 thành công!")
@@ -426,6 +433,8 @@ if st.session_state.generated_scripts:
         model = genai.GenerativeModel("gemini-3.8-flash")
         extra_prompt = f"""
                 Hãy viết THÊM 3 kịch bản quảng cáo mới hoàn toàn cho sản phẩm này ở 3 góc tiếp cận mới (So sánh chất lượng, Trải nghiệm bất ngờ, Chuyên gia phân tích).
+                LƯU Ý: Đây là video ngắn dựng sẵn, CẤM tuyệt đối dùng từ ngữ livestream (như mọi người ơi, giỏ hàng live, giảm theo suất). Dùng văn phong review thực tế, tự nhiên.
+                BẮT BUỘC phải tiếp tục bám sát và khai thác đúng biến thể Hot (Hero Variant) đã được xác định ở phần phân tích trước đó.
                 Giữ nguyên nhịp đọc nhanh, khẩu ngữ dân dã, chia phân cảnh rõ ràng.
                 """
         res_extra = model.generate_content(extra_prompt)
