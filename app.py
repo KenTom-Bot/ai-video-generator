@@ -165,12 +165,6 @@ if "script_2" not in st.session_state:
   st.session_state.script_2 = None
 if "script_3" not in st.session_state:
   st.session_state.script_3 = None
-if "prompts_s1" not in st.session_state:
-  st.session_state.prompts_s1 = None
-if "prompts_s2" not in st.session_state:
-  st.session_state.prompts_s2 = None
-if "prompts_s3" not in st.session_state:
-  st.session_state.prompts_s3 = None
 
 # --- 4. THANH ĐIỀU HƯỚNG (SIDEBAR) & LỊCH SỬ DỰ ÁN ---
 st.sidebar.markdown(
@@ -189,9 +183,6 @@ if st.sidebar.button(
   st.session_state.script_1 = None
   st.session_state.script_2 = None
   st.session_state.script_3 = None
-  st.session_state.prompts_s1 = None
-  st.session_state.prompts_s2 = None
-  st.session_state.prompts_s3 = None
   st.rerun()
 
 st.sidebar.divider()
@@ -251,7 +242,7 @@ st.markdown(
 st.markdown(
     "<p style='text-align: center; color: #4B5563; font-size: 16px;'>Hệ thống"
     " tự động hóa 100% ngành hàng: Quét tự động biến thể Hot 🔥, giọng đọc"
-    " Hà Nội chuẩn và sinh Prompt Ảnh & Video chuyên nghiệp.</p>",
+    " Hà Nội chuẩn (35-40 chữ/cảnh 8s) và sinh Prompt Ảnh & Video chuyên nghiệp.</p>",
     unsafe_allow_html=True,
 )
 st.divider()
@@ -298,7 +289,7 @@ if not st.session_state.analysis_col1:
       st.error("⚠️ Vui lòng tải lên ít nhất một ảnh sản phẩm!")
     else:
       with st.spinner(
-          "🤖 AI đang quét icon Hot 🔥 trên ảnh, khóa biến thể bán chạy và viết kịch bản..."
+          "🤖 AI đang quét icon Hot 🔥 trên ảnh, khóa biến thể bán chạy và viết kịch bản chuẩn nhịp 8s..."
       ):
         try:
           if "GEMINI_API_KEY" in st.secrets:
@@ -330,10 +321,11 @@ if not st.session_state.analysis_col1:
                     - CẤM hiển thị phần 3 câu hook giữ chân người xem.
                     - **TUYỆT ĐỐI KHÔNG TEXT, KHÔNG LOGO, KHÔNG NHẠC NỀN** trong mô tả phân cảnh hoặc khi tạo ảnh/video (chỉ cho phép âm thanh hiệu ứng sound effects).
                     
-                    QUY TRÌNH SÁNG TẠO KỊCH BẢN CHUẨN:
-                    1. Viết kịch bản LỜI THOẠI (Voiceover) tổng thể trước với nhịp đọc nhanh dồn dập, đủ dài cho toàn bộ video (90 - 120 từ tương đương 3 phân cảnh).
-                    2. Dựa trực tiếp vào lời thoại đó để chia ra chính xác 3 PHÂN CẢNH, mỗi phân cảnh chuẩn **8 giây**.
-                    3. Trong mỗi phân cảnh, cấu trúc bắt buộc phải: **Hình ảnh mô tả (Ở TRÊN)** và **Lời thoại chi tiết của phân cảnh đó (Ở DƯỚI)**.
+                    QUY TRÌNH SÁNG TẠO KỊCH BẢN CHUẨN (CỰC KỲ QUAN TRỌNG):
+                    1. Mỗi phân cảnh video có thời lượng cố định chuẩn **8 giây**.
+                    2. **Giới hạn tuyệt đối từ vựng:** Mỗi phân cảnh 8 giây **chỉ chứa từ 35 đến tối đa 40 chữ** trong phần lời thoại để KOC đọc thong thả, tự nhiên, rõ ràng không bị vấp/quá nhanh.
+                    3. **Linh hoạt số lượng phân cảnh:** Nếu nội dung dài, hãy **tự động chia thành nhiều phân cảnh hơn (từ 4 đến 5 phân cảnh)** thay vì ép buộc gò bó trong 3 phân cảnh.
+                    4. Trong mỗi phân cảnh, cấu trúc bắt buộc phải: **Hình ảnh mô tả (Ở TRÊN)** và **Lời thoại chi tiết của phân cảnh đó (Ở DƯỚI)**.
                     
                     Dòng đầu tiên PHẢI ghi chính xác tên sản phẩm (Ví dụ: Tên sản phẩm: Đầm body...).
                     
@@ -352,42 +344,42 @@ if not st.session_state.analysis_col1:
                     
                     ---SPLIT_SCENE_1---
                     ### 🎬 Kịch bản 1: Góc Review Thực Tế / Xưởng tận gốc (Tập trung biến thể Hot)
-                    - **Kịch bản Lời thoại Voiceover Tổng thể (90-120 từ, nhịp đọc nhanh Hà Nội):** [...]
-                    - **Phân cảnh 1 (8 giây):**
+                    - **Phân cảnh 1 (8 giây - 35-40 chữ):**
                       - *Hình ảnh:* [Mô tả chi tiết góc máy, hoàn toàn KHÔNG TEXT, KHÔNG LOGO]
-                      - *Lời thoại phân cảnh:* [Lời thoại tương ứng]
-                    - **Phân cảnh 2 (8 giây):**
+                      - *Lời thoại phân cảnh (Nhân vật đang nói):* [Lời thoại chuẩn 35-40 chữ]
+                    - **Phân cảnh 2 (8 giây - 35-40 chữ):**
                       - *Hình ảnh:* [Mô tả chi tiết góc máy, hoàn toàn KHÔNG TEXT, KHÔNG LOGO]
-                      - *Lời thoại phân cảnh:* [Lời thoại tương ứng]
-                    - **Phân cảnh 3 (8 giây):**
+                      - *Lời thoại phân cảnh (Nhân vật đang nói):* [Lời thoại chuẩn 35-40 chữ]
+                    - **Phân cảnh 3 (8 giây - 35-40 chữ):**
                       - *Hình ảnh:* [Mô tả chi tiết góc máy, hoàn toàn KHÔNG TEXT, KHÔNG LOGO]
-                      - *Lời thoại phân cảnh:* [Lời thoại tương ứng]
+                      - *Lời thoại phân cảnh (Nhân vật đang nói):* [Lời thoại chuẩn 35-40 chữ]
+                    - **Phân cảnh 4 (8 giây - 35-40 chữ - Nếu cần thiết):**
+                      - *Hình ảnh:* [...]
+                      - *Lời thoại phân cảnh (Nhân vật đang nói):* [...]
                     
                     ---SPLIT_SCENE_2---
                     ### 🎬 Kịch bản 2: Góc Nỗi đau & Tình huống kịch tính (Tập trung biến thể Hot)
-                    - **Kịch bản Lời thoại Voiceover Tổng thể (90-120 từ, nhịp đọc nhanh Hà Nội):** [...]
-                    - **Phân cảnh 1 (8 giây):**
-                      - *Hình ảnh:* [Mô tả chi tiết, hoàn toàn KHÔNG TEXT, KHÔNG LOGO]
-                      - *Lời thoại phân cảnh:* [...]
-                    - **Phân cảnh 2 (8 giây):**
-                      - *Hình ảnh:* [Mô tả chi tiết, hoàn toàn KHÔNG TEXT, KHÔNG LOGO]
-                      - *Lời thoại phân cảnh:* [...]
-                    - **Phân cảnh 3 (8 giây):**
-                      - *Hình ảnh:* [Mô tả chi tiết, hoàn toàn KHÔNG TEXT, KHÔNG LOGO]
-                      - *Lời thoại phân cảnh:* [...]
+                    - **Phân cảnh 1 (8 giây - 35-40 chữ):**
+                      - *Hình ảnh:* [...]
+                      - *Lời thoại phân cảnh (Nhân vật đang nói):* [...]
+                    - **Phân cảnh 2 (8 giây - 35-40 chữ):**
+                      - *Hình ảnh:* [...]
+                      - *Lời thoại phân cảnh (Nhân vật đang nói):* [...]
+                    - **Phân cảnh 3 (8 giây - 35-40 chữ):**
+                      - *Hình ảnh:* [...]
+                      - *Lời thoại phân cảnh (Nhân vật đang nói):* [...]
                     
                     ---SPLIT_SCENE_3---
                     ### 🎬 Kịch bản 3: Góc Flash Sale / Săn Sale sốc (Tập trung biến thể Hot)
-                    - **Kịch bản Lời thoại Voiceover Tổng thể (90-120 từ, nhịp đọc nhanh Hà Nội):** [...]
-                    - **Phân cảnh 1 (8 giây):**
-                      - *Hình ảnh:* [Mô tả chi tiết, hoàn toàn KHÔNG TEXT, KHÔNG LOGO]
-                      - *Lời thoại phân cảnh:* [...]
-                    - **Phân cảnh 2 (8 giây):**
-                      - *Hình ảnh:* [Mô tả chi tiết, hoàn toàn KHÔNG TEXT, KHÔNG LOGO]
-                      - *Lời thoại phân cảnh:* [...]
-                    - **Phân cảnh 3 (8 giây):**
-                      - *Hình ảnh:* [Mô tả chi tiết, hoàn toàn KHÔNG TEXT, KHÔNG LOGO]
-                      - *Lời thoại phân cảnh:* [...]
+                    - **Phân cảnh 1 (8 giây - 35-40 chữ):**
+                      - *Hình ảnh:* [...]
+                      - *Lời thoại phân cảnh (Nhân vật đang nói):* [...]
+                    - **Phân cảnh 2 (8 giây - 35-40 chữ):**
+                      - *Hình ảnh:* [...]
+                      - *Lời thoại phân cảnh (Nhân vật đang nói):* [...]
+                    - **Phân cảnh 3 (8 giây - 35-40 chữ):**
+                      - *Hình ảnh:* [...]
+                      - *Lời thoại phân cảnh (Nhân vật đang nói):* [...]
                     """
           contents.append(prompt_text)
 
@@ -478,7 +470,7 @@ if st.session_state.analysis_col1:
               f"Dựa vào kịch bản sau, hãy xuất ra Prompt chuẩn bằng tiếng Anh cho từng phân cảnh:\n"
               f"1. Prompt Ảnh tĩnh (Midjourney/Flux) (Nghiêm ngặt: không text, không logo).\n"
               f"2. Prompt Video (Veo 3 Pro) (Nghiêm ngặt: không text, không logo, không nhạc nền; ĐẶC BIỆT: Mô tả nhân vật đang cất lời thoại với khẩu hình miệng mấp máy khớp nội dung lời thoại của phân cảnh).\n"
-              f"Hãy trả về kết quả tuân thủ đúng định dạng:\n"
+              f"Hãy trả về kết quả tuân thủ đúng định dạng cho từng cảnh xuất hiện trong kịch bản:\n"
               f"### CẢNH 1\n"
               f"IMG_PROMPT: [Nội dung prompt ảnh cảnh 1]\n"
               f"VID_PROMPT: [Nội dung prompt video cảnh 1 kèm khẩu hình thoại]\n\n"
@@ -566,7 +558,7 @@ if st.session_state.analysis_col1:
         extra_prompt = f"""
                 Hãy viết THÊM 3 kịch bản quảng cáo mới hoàn toàn ở 3 góc tiếp cận mới.
                 {extra_note_instruction}
-                LƯU Ý NGHIÊM NGẶT: Bắt buộc khai thác biến thể mang nhãn Hot 🔥 làm trọng tâm. Hoàn toàn KHÔNG TEXT, KHÔNG LOGO, KHÔNG NHẠC NỀN. Viết kịch bản voice tổng thể trước rồi chia thành các phân cảnh chuẩn 8 giây (hình ảnh ở trên, lời thoại ở dưới).
+                LƯU Ý NGHIÊM NGẶT: Bắt buộc khai thác biến thể mang nhãn Hot 🔥 làm trọng tâm. Mỗi phân cảnh 8 giây chỉ chứa 35-40 chữ. Hoàn toàn KHÔNG TEXT, KHÔNG LOGO, KHÔNG NHẠC NỀN.
                 """
         res_extra = model.generate_content(extra_prompt)
         st.session_state.script_3 += "\n\n" + res_extra.text
