@@ -69,7 +69,6 @@ def save_project_db(
 ):
   try:
     created_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
     existing = (
         supabase.table("projects")
         .select("id")
@@ -93,8 +92,7 @@ def save_project_db(
           "status": status,
           "is_deleted": 0,
       }).execute()
-  except Exception as e:
-    # Bỏ qua lỗi RLS nếu chưa cấu hình policy trên Supabase để app không bị sập
+  except Exception:
     pass
 
 
@@ -149,8 +147,6 @@ if "current_project_name" not in st.session_state:
   st.session_state.current_project_name = (
       f"Dự án mới - {datetime.datetime.now().strftime('%d/%m/%Y')}"
   )
-if "generated_scripts" not in st.session_state:
-  st.session_state.generated_scripts = None
 if "product_analysis" not in st.session_state:
   st.session_state.product_analysis = None
 if "script_1" not in st.session_state:
@@ -174,7 +170,6 @@ if st.sidebar.button(
   st.session_state.current_project_name = (
       f"Dự án mới - {datetime.datetime.now().strftime('%d/%m/%Y')}"
   )
-  st.session_state.generated_scripts = None
   st.session_state.product_analysis = None
   st.session_state.script_1 = None
   st.session_state.script_2 = None
@@ -207,7 +202,14 @@ else:
       if col_p1.button(f"📁 {pname[:20]}...", key=f"load_{pid}"):
         st.session_state.current_project_name = pname
         st.session_state.product_analysis = pinfo
-        st.session_state.generated_scripts = pscript
+        # Tách lại dữ liệu khi load dự án cũ
+        parts = pscript.split("===KỊCH BẢN")
+        if len(parts) >= 4:
+          st.session_state.script_1 = "===KỊCH BẢN" + parts[1]
+          st.session_state.script_2 = "===KỊCH BẢN" + parts[2]
+          st.session_state.script_3 = "===KỊCH BẢN" + parts[3]
+        else:
+          st.session_state.script_1 = pscript
         st.rerun()
       if col_p2.button("❌", key=f"del_{pid}"):
         soft_delete_project(pid)
@@ -233,17 +235,14 @@ st.markdown(
 )
 st.divider()
 
-if not st.session_state.generated_scripts:
+if not st.session_state.product_analysis:
   st.markdown("### 📦 Thông Tin Đầu Vào Sản Phẩm")
   product_images = st.file_uploader(
       "Tải lên nhiều ảnh sản phẩm thật (Nhiều góc độ, thông tin chi tiết,"
       " thông số...)",
       type=["jpg", "png", "jpeg"],
       accept_multiple_files=True,
-      help=(
-          "Bạn có thể chọn nhiều ảnh cùng lúc để AI phân tích toàn diện mọi góc"
-          " cạnh của sản phẩm."
-      ),
+      help="Chọn nhiều ảnh cùng lúc để AI phân tích toàn diện sản phẩm.",
   )
 
   if product_images:
@@ -262,24 +261,11 @@ if not st.session_state.generated_scripts:
       "📝 Ghi chú / Yêu cầu riêng cho kịch bản (Quyền ưu tiên cao nhất)",
       placeholder=(
           "Nhập các yêu cầu đặc biệt của bạn vào đây (Ví dụ: Nhấn mạnh chương"
-          " trình mua 1 tặng 1, tập trung vào chất liệu inox 304, hoặc đang chạy"
-          " flash sale giảm 50%...)"
-      ),
-      help=(
-          "Nếu bạn nhập nội dung vào ô này, AI sẽ ưu tiên tuyệt đối các yêu cầu"
-          " này khi xây dựng toàn bộ kịch bản."
+          " trình mua 1 tặng 1, tập trung vào chất liệu inox 304...)"
       ),
   )
 
-  st.markdown(
-      "<p style='text-align: center; color: #6B7280; font-style: italic;'>💡 Lưu"
-      " ý: Giới tính nhân vật, trang phục và chất giọng Hà Nội chuẩn sẽ được AI"
-      " tự động phân tích và gán khớp tuyệt đối dựa trên đặc tính sản"
-      " phẩm.</p>",
-      unsafe_allow_html=True,
-  )
   st.markdown("<br>", unsafe_allow_html=True)
-
   col_b1, col_b2, col_b3 = st.columns([1, 2, 1])
   with col_b2:
     analyze_btn = st.button(
@@ -294,7 +280,7 @@ if not st.session_state.generated_scripts:
     else:
       with st.spinner(
           "🤖 AI đang nén ảnh tối ưu token, phân tích biến thể Hot và viết"
-          " kịch bản..."
+          " kịch bản chuẩn..."
       ):
         try:
           if "GEMINI_API_KEY" in st.secrets:
@@ -306,58 +292,62 @@ if not st.session_state.generated_scripts:
           contents = [compress_image_for_ai(img) for img in product_images]
 
           notes_instruction = (
-              f"\n\n🚨 CHÚ Ý ĐẶC BIỆT (QUYỀN ƯU TIÊN CAO NHẤT): Người dùng đã nhập"
-              f" ghi chú/yêu cầu riêng sau đây: '{user_notes}'. Bạn BẮT BUỘC"
-              f" phải tuân thủ tuyệt đối, xoay xỏ nội dung và làm nổi bật các"
-              f" yêu cầu này trong toàn bộ kịch bản và phân cảnh, vượt lên trên"
-              f" các tiêu chuẩn thông thường nếu có xung đột."
+              f"\n\n🚨 GHI CHÚ RIÊNG: '{user_notes}'."
               if user_notes.strip()
               else ""
           )
 
           prompt_text = f"""
-                    Bạn là Giám đốc Sản xuất Video Quảng cáo AI chuyên nghiệp cho các nền tảng Video ngắn (Reels, TikTok, Shorts - DẠNG VIDEO DỰNG SẴN, KHÔNG PHẢI LIVESTREAM). Hãy phân tích toàn bộ các hình ảnh sản phẩm đã cung cấp.
+                    Bạn là Giám đốc Sản xuất Video Quảng cáo AI chuyên nghiệp cho video ngắn dựng sẵn (Reels, TikTok - KHÔNG LIVESTREAM). Hãy phân tích các hình ảnh sản phẩm.
                     {notes_instruction}
                     
-                    QUY TẮC VÀNG VỀ NGÔN TỪ:
-                    - Đây là VIDEO QUẢNG CÁO DỰNG SẴN, tuyệt đối KHÔNG dùng ngôn từ hiểu nhầm thành Livestream (Cấm dùng: "mọi người ơi", "vào giỏ hàng phiên live", "chấm điểm đi", "thả tim trên màn hình live", "giảm theo suất có hạn").
-                    - TUYỆT ĐỐI KHÔNG hiển thị phần 3 câu hook giữ chân người xem.
+                    QUY TẮC CẤM TUYỆT ĐỐI:
+                    - CẤM dùng từ ngữ livestream ("mọi người ơi", "giỏ hàng phiên live", "giảm theo suất").
+                    - CẤM hiển thị phần 3 câu hook giữ chân người xem.
                     
                     YÊU CẦU ĐẶC BIỆT:
-                    - Dòng đầu tiên của phản hồi PHẢI ghi chính xác tên chuẩn của sản phẩm (Ví dụ: Tên sản phẩm: Áo sơ mi nam công sở...).
+                    - Dòng đầu tiên PHẢI ghi chính xác tên sản phẩm (Ví dụ: Tên sản phẩm: Đầm body...).
                     
-                    YÊU CẦU ĐỊNH DẠNG (TRẢ VỀ RÕ RÀNG BẰNG MARKDOWN SẠCH):
-                    1. PHẦN PHÂN TÍCH CHI TIẾT SẢN PHẨM: Trình bày rõ ràng các tiêu đề được **bôi đậm**:
-                       - **1. Chân dung Khách hàng & Đặc tính**
-                       - **2. KOC Chuẩn Việt, Stylist & Khóa Màu (Hero Variant Hot)**
-                       - **3. Giải phẫu Sản phẩm & Khóa Hình học 3D**
-                       - **4. Chuẩn Bối Cảnh & Mức Giá**
-                    2. PHẦN 3 KỊCH BẢN THOẠI QUẢNG CÁO (Tách biệt rõ ràng 3 mục riêng để app dễ phân tách):
-                       ===KỊCH BẢN 1===
-                       [Nội dung kịch bản 1 góc Review Thực Tế, nhịp đọc nhanh 32-42 từ/cảnh 8 giây]
-                       ===KỊCH BẢN 2===
-                       [Nội dung kịch bản 2 góc Nỗi đau & Kịch tính]
-                       ===KỊCH BẢN 3===
-                       [Nội dung kịch bản 3 góc Flash Sale]
+                    TRẢ VỀ ĐÚNG CẤU TRÚC 2 PHẦN SAU (DÙNG THẺ PHÂN TÁCH CHÍNH XÁC):
+                    ===PHÂN_TÍCH===
+                    **1. Chân dung Khách hàng & Đặc tính**
+                    [Nội dung phân tích]
+                    **2. KOC Chuẩn Việt, Stylist & Khóa Màu (Hero Variant Hot)**
+                    [Nội dung phân tích]
+                    **3. Giải phẫu Sản phẩm & Khóa Hình học 3D**
+                    [Nội dung phân tích]
+                    **4. Chuẩn Bối Cảnh & Mức Giá**
+                    [Nội dung phân tích]
+                    
+                    ===KỊCH BẢN 1===
+                    **Kịch bản 1: Góc Review Thực Tế / Xưởng tận gốc**
+                    [Chi tiết phân cảnh 8 giây, nhịp đọc nhanh 32-42 từ]
+                    
+                    ===KỊCH BẢN 2===
+                    **Kịch bản 2: Góc Nỗi đau & Tình huống kịch tính**
+                    [Chi tiết phân cảnh 8 giây]
+                    
+                    ===KỊCH BẢN 3===
+                    **Kịch bản 3: Góc Flash Sale / Săn Sale sốc**
+                    [Chi tiết phân cảnh 8 giây]
                     """
           contents.append(prompt_text)
 
           response = model.generate_content(contents)
           full_text = response.text
-          st.session_state.generated_scripts = full_text
 
-          # Tách tự động 3 kịch bản dựa vào thẻ phân cách
+          # Tách thông minh phần phân tích và các kịch bản
           try:
+            p_split = full_text.split("===PHÂN_TÍCH===")
+            analysis_part = p_split[1].split("===KỊCH BẢN")[0] if len(p_split) > 1 else full_text
+            st.session_state.product_analysis = analysis_part
+
             parts = full_text.split("===KỊCH BẢN")
-            if len(parts) >= 4:
-              st.session_state.script_1 = "===KỊCH BẢN" + parts[1]
-              st.session_state.script_2 = "===KỊCH BẢN" + parts[2]
-              st.session_state.script_3 = "===KỊCH BẢN" + parts[3]
-            else:
-              st.session_state.script_1 = full_text
-              st.session_state.script_2 = ""
-              st.session_state.script_3 = ""
-          except:
+            st.session_state.script_1 = "===KỊCH BẢN" + parts[1] if len(parts) > 1 else ""
+            st.session_state.script_2 = "===KỊCH BẢN" + parts[2] if len(parts) > 2 else ""
+            st.session_state.script_3 = "===KỊCH BẢN" + parts[3] if len(parts) > 3 else ""
+          except Exception:
+            st.session_state.product_analysis = full_text
             st.session_state.script_1 = full_text
 
           extracted_name = "Dự án sản phẩm"
@@ -379,16 +369,16 @@ if not st.session_state.generated_scripts:
 
           save_project_db(
               st.session_state.current_project_name,
-              "Phân tích hoàn tất",
-              st.session_state.generated_scripts,
+              st.session_state.product_analysis,
+              full_text,
           )
-          st.success("✅ Phân tích thành công!")
+          st.success("✅ Phân tích thành công và đã tự động lưu dự án!")
           st.rerun()
         except Exception as e:
           st.error(f"Lỗi khi gọi API: {e}")
 
-# --- 6. HIỂN THỊ PHÂN TÍCH 2 CỘT VÀ KỊCH BẢN CÓ NÚT XUẤT PROMPT NGAY DƯỚI ---
-if st.session_state.generated_scripts:
+# --- 6. HIỂN THỊ GIAO DIỆN SẠCH SẼ, 2 CỘT PHÂN TÍCH & KỊCH BẢN RIÊNG BIỆT ---
+if st.session_state.product_analysis:
   st.markdown("<br>", unsafe_allow_html=True)
   st.markdown(
       "<h2 style='text-align: center; color: #4F46E5;'>🔍 Phân Tích Chi Tiết"
@@ -397,9 +387,15 @@ if st.session_state.generated_scripts:
   )
   st.markdown("<br>", unsafe_allow_html=True)
 
-  # Chia phần phân tích thành 2 cột 2 bên cân đối
-  full_content = st.session_state.generated_scripts
+  # Chia phân tích thành 2 cột 2 bên cân đối, sạch sẽ
+  analysis_text = st.session_state.product_analysis
   col_left, col_right = st.columns(2)
+
+  mid_idx = len(analysis_text) // 2
+  # Cắt gọn theo đoạn xuống dòng để không bị cụt chữ
+  split_idx = analysis_text.find("\n\n", mid_idx)
+  if split_idx == -1:
+    split_idx = mid_idx
 
   with col_left:
     st.markdown(
@@ -407,8 +403,7 @@ if st.session_state.generated_scripts:
         ' 10px; border: 1px solid #E5E7EB;">',
         unsafe_allow_html=True,
     )
-    st.markdown("### 📌 Thông tin chung & Khách hàng")
-    st.markdown(full_content[: len(full_content) // 2])
+    st.markdown(analysis_text[:split_idx])
     st.markdown("</div>", unsafe_allow_html=True)
 
   with col_right:
@@ -417,8 +412,7 @@ if st.session_state.generated_scripts:
         ' 10px; border: 1px solid #E5E7EB;">',
         unsafe_allow_html=True,
     )
-    st.markdown("### 🎨 Giải phẫu & Bối cảnh")
-    st.markdown(full_content[len(full_content) // 2 :])
+    st.markdown(analysis_text[split_idx:])
     st.markdown("</div>", unsafe_allow_html=True)
 
   st.markdown("<br><hr><br>", unsafe_allow_html=True)
@@ -430,7 +424,6 @@ if st.session_state.generated_scripts:
   st.markdown("<br>", unsafe_allow_html=True)
 
   # KỊCH BẢN 1 & NÚT XUẤT PROMPT NGAY DƯỚI
-  st.markdown("### 🎬 Kịch bản 1: Góc Review Thực Tế / Xưởng Tận Gốc")
   st.markdown(
       '<div style="background-color: #F3F4F6; padding: 20px; border-radius:'
       ' 10px;">',
@@ -439,7 +432,7 @@ if st.session_state.generated_scripts:
   st.markdown(
       st.session_state.script_1
       if st.session_state.script_1
-      else st.session_state.generated_scripts
+      else "Đang cập nhật..."
   )
   st.markdown("</div>", unsafe_allow_html=True)
   if st.button(
@@ -456,7 +449,7 @@ if st.session_state.generated_scripts:
           genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
         model = genai.GenerativeModel("gemini-3.8-flash")
         res_v = model.generate_content(
-            f"Dựa vào nội dung kịch bản 1 sau, hãy chia thành N phân cảnh (mỗi cảnh 8 giây) và xuất Prompt Veo 3 đồng bộ tuyệt đối:\n{st.session_state.script_1}"
+            f"Dựa vào kịch bản 1 sau, chia thành N phân cảnh (8 giây/cảnh) và xuất Prompt Veo 3 đồng bộ:\n{st.session_state.script_1}"
         )
         st.session_state.veo_prompts = res_v.text
         st.success("✅ Đã xuất Prompt Veo 3 Kịch bản 1 thành công!")
@@ -467,7 +460,6 @@ if st.session_state.generated_scripts:
   st.markdown("<br>", unsafe_allow_html=True)
 
   # KỊCH BẢN 2 & NÚT XUẤT PROMPT NGAY DƯỚI
-  st.markdown("### 🎬 Kịch bản 2: Góc Nỗi Đau & Tình Huống Kịch Tính")
   st.markdown(
       '<div style="background-color: #F3F4F6; padding: 20px; border-radius:'
       ' 10px;">',
@@ -476,7 +468,7 @@ if st.session_state.generated_scripts:
   st.markdown(
       st.session_state.script_2
       if st.session_state.script_2
-      else "Chưa có nội dung chi tiết."
+      else "Đang cập nhật..."
   )
   st.markdown("</div>", unsafe_allow_html=True)
   if st.button(
@@ -493,7 +485,7 @@ if st.session_state.generated_scripts:
           genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
         model = genai.GenerativeModel("gemini-3.8-flash")
         res_v = model.generate_content(
-            f"Dựa vào nội dung kịch bản 2 sau, hãy chia thành N phân cảnh (mỗi cảnh 8 giây) và xuất Prompt Veo 3 đồng bộ tuyệt đối:\n{st.session_state.script_2}"
+            f"Dựa vào kịch bản 2 sau, chia thành N phân cảnh (8 giây/cảnh) và xuất Prompt Veo 3 đồng bộ:\n{st.session_state.script_2}"
         )
         st.session_state.veo_prompts = res_v.text
         st.success("✅ Đã xuất Prompt Veo 3 Kịch bản 2 thành công!")
@@ -504,7 +496,6 @@ if st.session_state.generated_scripts:
   st.markdown("<br>", unsafe_allow_html=True)
 
   # KỊCH BẢN 3 & NÚT XUẤT PROMPT NGAY DƯỚI
-  st.markdown("### 🎬 Kịch bản 3: Góc Flash Sale / Săn Sale Sốc")
   st.markdown(
       '<div style="background-color: #F3F4F6; padding: 20px; border-radius:'
       ' 10px;">',
@@ -513,7 +504,7 @@ if st.session_state.generated_scripts:
   st.markdown(
       st.session_state.script_3
       if st.session_state.script_3
-      else "Chưa có nội dung chi tiết."
+      else "Đang cập nhật..."
   )
   st.markdown("</div>", unsafe_allow_html=True)
   if st.button(
@@ -530,7 +521,7 @@ if st.session_state.generated_scripts:
           genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
         model = genai.GenerativeModel("gemini-3.8-flash")
         res_v = model.generate_content(
-            f"Dựa vào nội dung kịch bản 3 sau, hãy chia thành N phân cảnh (mỗi cảnh 8 giây) và xuất Prompt Veo 3 đồng bộ tuyệt đối:\n{st.session_state.script_3}"
+            f"Dựa vào kịch bản 3 sau, chia thành N phân cảnh (8 giây/cảnh) và xuất Prompt Veo 3 đồng bộ:\n{st.session_state.script_3}"
         )
         st.session_state.veo_prompts = res_v.text
         st.success("✅ Đã xuất Prompt Veo 3 Kịch bản 3 thành công!")
@@ -544,10 +535,7 @@ if st.session_state.generated_scripts:
   st.markdown("#### ➕ Tạo Thêm Kịch Bản Mới (Góc Tiếp Cận Khác)")
   extra_user_notes = st.text_area(
       "📝 Ghi chú / Yêu cầu riêng cho lần gọi thêm này (Tùy chọn)",
-      placeholder=(
-          "Nhập yêu cầu riêng cho các kịch bản gọi thêm (Ví dụ: Tập trung vào độ"
-          " bền, nhấn mạnh quà tặng kèm...)"
-      ),
+      placeholder="Nhập yêu cầu riêng cho các kịch bản gọi thêm...",
       key="extra_notes_input",
   )
 
@@ -563,26 +551,29 @@ if st.session_state.generated_scripts:
 
         model = genai.GenerativeModel("gemini-3.8-flash")
         extra_note_instruction = (
-            f"\n\n🚨 GHI CHÚ RIÊNG CHO LẦN NÀY: '{extra_user_notes}'."
+            f"\n\n🚨 GHI CHÚ RIÊNG: '{extra_user_notes}'."
             if extra_user_notes.strip()
             else ""
         )
         extra_prompt = f"""
-                Hãy viết THÊM 3 kịch bản quảng cáo mới hoàn toàn cho sản phẩm này ở 3 góc tiếp cận mới (So sánh chất lượng, Trải nghiệm bất ngờ, Chuyên gia phân tích).
+                Hãy viết THÊM 3 kịch bản quảng cáo mới hoàn toàn ở 3 góc tiếp cận mới (So sánh chất lượng, Trải nghiệm bất ngờ, Chuyên gia phân tích).
                 {extra_note_instruction}
-                LƯU Ý: Đây là video ngắn dựng sẵn, CẤM tuyệt đối dùng từ ngữ livestream và KHÔNG hiển thị câu hook. BẮT BUỘC tiếp tục bám sát và khai thác đúng biến thể Hot (Hero Variant) đã xác định trước đó.
-                Giữ nguyên nhịp đọc nhanh, khẩu ngữ dân dã, chia phân cảnh rõ ràng dưới dạng Markdown sạch.
+                LƯU Ý: Đây là video ngắn dựng sẵn, CẤM tuyệt đối dùng từ ngữ livestream và KHÔNG hiển thị câu hook. BẮT BUỘC tiếp tục bám sát và khai thác đúng biến thể Hot đã xác định.
                 """
         res_extra = model.generate_content(extra_prompt)
-        st.session_state.generated_scripts += (
-            "\n\n--- BỘ KỊCH BẢN MỚI BỔ SUNG ---\n\n" + res_extra.text
-        )
+        st.session_state.script_3 += "\n\n" + res_extra.text
         save_project_db(
             st.session_state.current_project_name,
-            "Cập nhật thêm kịch bản",
-            st.session_state.generated_scripts,
+            st.session_state.product_analysis,
+            st.session_state.product_analysis
+            + "\n"
+            + st.session_state.script_1
+            + "\n"
+            + st.session_state.script_2
+            + "\n"
+            + st.session_state.script_3,
         )
-        st.success("Đã bổ sung thêm 3 kịch bản mới thành công!")
+        st.success("Đã bổ sung thêm kịch bản mới thành công!")
         st.rerun()
       except Exception as e:
         st.error(f"Lỗi: {e}")
