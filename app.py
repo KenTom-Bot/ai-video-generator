@@ -6,7 +6,12 @@ import google.generativeai as genai
 from PIL import Image
 
 # --- 0. CẤU HÌNH HỆ THỐNG & BẢO MẬT ĐĂNG NHẬP ---
-st.set_page_config(page_title="AI Video Viral", page_icon="🎬", layout="wide")
+st.set_page_config(
+    page_title="AI Video Viral",
+    page_icon="🎬",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
 
 # Thiết lập mật khẩu bảo vệ App (Bạn có thể đổi mật khẩu tại đây)
 ADMIN_PASSWORD = "123"  # <-- Mật khẩu truy cập app
@@ -23,17 +28,24 @@ def check_password():
       st.session_state["password_correct"] = False
 
   if "password_correct" not in st.session_state:
-    st.text_input(
-        "🔒 Vui lòng nhập mật khẩu để truy cập App",
-        type="password",
-        on_change=password_entered,
-        key="password",
+    st.markdown(
+        "<h2 style='text-align: center; color: #4F46E5;'>🔒 Đăng Nhập Hệ Thống"
+        " AI Video Viral</h2>",
+        unsafe_allow_html=True,
     )
-    st.warning("⚠️ App này được bảo mật. Vui lòng nhập mật khẩu để tiếp tục.")
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+      st.text_input(
+          "Vui lòng nhập mật khẩu để truy cập App",
+          type="password",
+          on_change=password_entered,
+          key="password",
+      )
+      st.warning("⚠️ App này được bảo mật tuyệt đối.")
     return False
   elif not st.session_state["password_correct"]:
     st.text_input(
-        "🔒 Vui lòng nhập mật khẩu để truy cập App",
+        "Vui lòng nhập mật khẩu để truy cập App",
         type="password",
         on_change=password_entered,
         key="password",
@@ -93,7 +105,7 @@ def save_project_db(
 
 
 def get_all_projects():
-  """Lấy danh sách tất cả dự án chưa bị xóa từ Database"""
+  """Hàm lấy danh sách dự án chưa bị xóa"""
   conn = sqlite3.connect(DB_FILE)
   cursor = conn.cursor()
   cursor.execute(
@@ -106,7 +118,7 @@ def get_all_projects():
 
 
 def soft_delete_project(project_id):
-  """Xóa mềm dự án"""
+  """Hàm xóa mềm dự án"""
   conn = sqlite3.connect(DB_FILE)
   cursor = conn.cursor()
   cursor.execute(
@@ -129,9 +141,12 @@ if "veo_prompts" not in st.session_state:
   st.session_state.veo_prompts = None
 
 # --- 3. THANH ĐIỀU HƯỚNG (SIDEBAR) & QUẢN LÝ DỰ ÁN ---
-st.sidebar.title("🗂️ Quản lý Dự án Vĩnh viễn")
+st.sidebar.markdown(
+    "<h3 style='text-align: center;'>🗂️ Quản lý Dự án</h3>",
+    unsafe_allow_html=True,
+)
 
-# Nút Tạo dự án mới
+# Nút Tạo dự án mới (Căn giữa)
 if st.sidebar.button(
     "➕ Tạo Dự Án Mới", type="primary", use_container_width=True
 ):
@@ -145,27 +160,29 @@ if st.sidebar.button(
 
 st.sidebar.divider()
 
-# Ô Tên dự án chuyển sang thanh bên trái
-st.sidebar.subheader("🏷️ Cài đặt Dự án")
+# Ô Tên dự án ở Sidebar
+st.sidebar.markdown("🏷️ **Cài đặt Tên Dự Án**")
 project_title_input = st.sidebar.text_input(
-    "Tên dự án hiện tại", value=st.session_state.current_project_name
+    "Tên dự án hiện tại",
+    value=st.session_state.current_project_name,
+    label_visibility="collapsed",
 )
 st.session_state.current_project_name = project_title_input
 
 st.sidebar.divider()
 
-# Thanh tìm kiếm dự án cũ trong Database
+# Thanh tìm kiếm dự án cũ
 search_query = st.sidebar.text_input("🔍 Tìm kiếm dự án cũ", "")
 projects = get_all_projects()
 
-st.sidebar.subheader("📜 Lịch sử dự án đã lưu")
+st.sidebar.markdown("📜 **Lịch sử dự án đã lưu**")
 if not projects:
   st.sidebar.info("Chưa có dự án nào trong Database.")
 else:
   for pid, pname, pdate, pinfo, pscript, pstatus in projects:
     if search_query.lower() in pname.lower():
       col_p1, col_p2 = st.sidebar.columns([4, 1])
-      if col_p1.button(f"📁 {pname[:22]}...", key=f"load_{pid}"):
+      if col_p1.button(f"📁 {pname[:20]}...", key=f"load_{pid}"):
         st.session_state.current_project_name = pname
         st.session_state.product_analysis = pinfo
         st.session_state.generated_scripts = pscript
@@ -181,18 +198,24 @@ if st.sidebar.button("🚪 Đăng xuất tài khoản", use_container_width=True
   st.session_state["password_correct"] = False
   st.rerun()
 
-# --- 4. GIAO DIỆN CHÍNH ---
-st.title("🎬 AI Video Viral")
+# --- 4. GIAO DIỆN CHÍNH (CĂN CHỈNH ĐẸP MẮT, CÂN ĐỐI) ---
 st.markdown(
-    "Hệ thống tự động hóa 100% ngành hàng: AI tự phân tích ảnh sản phẩm,"
-    " thông tin Shopee, khóa đồng bộ nhân vật, trang phục, giọng đọc Hà Nội"
-    " chuẩn và sinh Prompt Veo 3 chuyên nghiệp."
+    "<h1 style='text-align: center; color: #1F2937;'>🎬 AI Video Viral</h1>",
+    unsafe_allow_html=True,
 )
+st.markdown(
+    "<p style='text-align: center; color: #4B5563; font-size: 16px;'>Hệ thống"
+    " tự động hóa 100% ngành hàng: Phân tích sản phẩm, khóa đồng bộ nhân vật,"
+    " trang phục, giọng đọc Hà Nội chuẩn và sinh Prompt Veo 3 chuyên"
+    " nghiệp.</p>",
+    unsafe_allow_html=True,
+)
+st.divider()
 
 # 1. Ô tải ảnh duy nhất
+st.markdown("### 📦 Thông Tin Đầu Vào Sản Phẩm")
 product_image = st.file_uploader(
-    "1️⃣ Tải lên Ảnh Sản Phẩm Thật kèm thông tin chi tiết / thông số"
-    " (Shopee/TikTok)",
+    "Tải lên Ảnh Sản Phẩm Thật kèm thông tin chi tiết / thông số (Shopee/TikTok)",
     type=["jpg", "png", "jpeg"],
     help=(
         "Tải lên ảnh chụp sản phẩm rõ nét kèm thông tin mô tả để Veo 3 tham"
@@ -223,18 +246,28 @@ user_notes = st.text_area(
     ),
 )
 
-st.info(
-    "💡 **Lưu ý:** Giới tính nhân vật, trang phục và chất giọng Hà Nội chuẩn"
-    " sẽ được AI tự động phân tích và gán khớp tuyệt đối dựa trên đặc tính sản"
-    " phẩm."
+st.markdown(
+    "<p style='text-align: center; color: #6B7280; font-style: italic;'>💡 Lưu"
+    " ý: Giới tính nhân vật, trang phục và chất giọng Hà Nội chuẩn sẽ được AI"
+    " tự động phân tích và gán khớp tuyệt đối dựa trên đặc tính sản"
+    " phẩm.</p>",
+    unsafe_allow_html=True,
 )
+st.markdown("<br>", unsafe_allow_html=True)
+
+# Nút Phân Tích (Căn giữa màn hình)
+col_b1, col_b2, col_b3 = st.columns([1, 2, 1])
+with col_b2:
+  analyze_btn = st.button(
+      "🚀 Phân Tích Sản Phẩm & Tạo Kịch Bản",
+      type="primary",
+      use_container_width=True,
+  )
 
 # --- 5. XỬ LÝ PHÂN TÍCH BẰNG GEMINI ---
-if st.button(
-    "🚀 Phân Tích Sản Phẩm & Tạo Bộ 3 Kịch Bản Ban Đầu", type="primary"
-):
+if analyze_btn:
   if not product_image:
-    st.error("Vui lòng tải lên ảnh sản phẩm thật kèm thông tin!")
+    st.error("⚠️ Vui lòng tải lên ảnh sản phẩm thật kèm thông tin!")
   else:
     with st.spinner(
         "🤖 AI đang phân tích sản phẩm, ưu tiên ghi chú của bạn và viết kịch"
@@ -249,7 +282,6 @@ if st.button(
         model = genai.GenerativeModel("gemini-1.5-pro-latest")
         img_prod = Image.open(product_image)
 
-        # Chèn ghi chú của người dùng vào prompt với mức ưu tiên cao nhất
         notes_instruction = (
             f"\n\n🚨 CHÚ Ý ĐẶC BIỆT (QUYỀN ƯU TIÊN CAO NHẤT): Người dùng đã nhập ghi"
             f" chú/yêu cầu riêng sau đây: '{user_notes}'. Bạn BẮT BUỘC phải tuân"
@@ -280,7 +312,6 @@ if st.button(
         st.session_state.generated_scripts = response.text
         st.session_state.product_analysis = f"Ghi chú ưu tiên: {user_notes}"
 
-        # Tự động lưu vào Database vĩnh viễn
         save_project_db(
             st.session_state.current_project_name,
             st.session_state.product_analysis,
@@ -291,21 +322,33 @@ if st.button(
       except Exception as e:
         st.error(f"Lỗi khi gọi API: {e}")
 
-# --- 6. HIỂN THỊ KỊCH BẢN & TÍNH NĂNG GỌI THÊM KỊCH BẢN ---
+# --- 6. HIỂN THỊ KỊCH BẢN NGAY LẬP TỨC Ở ĐẦU MÀN HÌNH KHI ĐƯỢC TẠO ---
 if st.session_state.generated_scripts:
-  st.divider()
-  st.subheader("📝 Kịch bản Thoại Đã Tạo (Chọn hoặc Gọi Thêm)")
+  st.markdown("<br>", unsafe_allow_html=True)
+  st.markdown(
+      "<h2 style='text-align: center; color: #4F46E5;'>📝 Kịch Bản Thoại Đã"
+      " Tạo</h2>",
+      unsafe_allow_html=True,
+  )
+  st.markdown(
+      "<p style='text-align: center;'>Bạn có thể đọc duyệt, chỉnh sửa trực tiếp"
+      " lời thoại hoặc gọi thêm các góc tiếp cận mới bên dưới:</p>",
+      unsafe_allow_html=True,
+  )
 
+  # Hiển thị kịch bản trong khung văn bản để chỉnh sửa
   edited_scripts = st.text_area(
-      "Bạn có thể đọc duyệt và chỉnh sửa trực tiếp lời thoại dưới đây:",
+      "Nội dung kịch bản thoại",
       value=st.session_state.generated_scripts,
-      height=300,
+      height=350,
+      label_visibility="collapsed",
   )
   st.session_state.generated_scripts = edited_scripts
 
+  st.markdown("<br>", unsafe_allow_html=True)
   col_s1, col_s2 = st.columns(2)
 
-  # Nút Gọi Thêm Kịch Bản (Góc tiếp cận mới / Flash Sale)
+  # Nút Gọi Thêm Kịch Bản
   if col_s1.button(
       "➕ Gọi thêm 3 Kịch bản khác (Góc tiếp cận mới & Flash Sale)",
       use_container_width=True,
@@ -384,6 +427,10 @@ if st.session_state.generated_scripts:
 
 # --- 7. HIỂN THỊ KẾT QUẢ PROMPT VEO 3 (COPY 1 CHẠM) ---
 if st.session_state.veo_prompts:
-  st.divider()
-  st.subheader("🎯 Bộ Prompt Veo 3 Hoàn Chỉnh (Đồng bộ tuyệt đối)")
+  st.markdown("<br>", unsafe_allow_html=True)
+  st.markdown(
+      "<h3 style='text-align: center; color: #10B981;'>🎯 Bộ Prompt Veo 3 Hoàn"
+      " Chỉnh (Đồng bộ tuyệt đối)</h3>",
+      unsafe_allow_html=True,
+  )
   st.code(st.session_state.veo_prompts, language="text")
