@@ -241,8 +241,8 @@ st.markdown(
 )
 st.markdown(
     "<p style='text-align: center; color: #4B5563; font-size: 16px;'>Hệ thống"
-    " tự động hóa 100% ngành hàng: Quét tự động biến thể Hot 🔥, giọng đọc"
-    " Hà Nội chuẩn (35-40 chữ/cảnh 8s) và sinh Prompt Ảnh & Video chuyên nghiệp.</p>",
+    " tự động hóa 100% ngành hàng: Khóa đồng bộ trang phục/biến thể Hot 🔥,"
+    " giọng đọc chuẩn 35-40 chữ/cảnh và sinh Prompt Ảnh & Video chuyên nghiệp.</p>",
     unsafe_allow_html=True,
 )
 st.divider()
@@ -279,7 +279,7 @@ if not st.session_state.analysis_col1:
   col_b1, col_b2, col_b3 = st.columns([1, 2, 1])
   with col_b2:
     analyze_btn = st.button(
-        "🚀 Phân Tích & Tạo Kịch Bản Theo Biến Thể Hot",
+        "🚀 Phân Tích & Tạo Kịch Bản Đồng Nhất Trang Phục",
         type="primary",
         use_container_width=True,
     )
@@ -289,7 +289,7 @@ if not st.session_state.analysis_col1:
       st.error("⚠️ Vui lòng tải lên ít nhất một ảnh sản phẩm!")
     else:
       with st.spinner(
-          "🤖 AI đang quét icon Hot 🔥 trên ảnh, khóa biến thể bán chạy và viết kịch bản chuẩn nhịp 8s..."
+          "🤖 AI đang khóa chặt trang phục biến thể Hot 🔥, viết kịch bản đồng bộ..."
       ):
         try:
           if "GEMINI_API_KEY" in st.secrets:
@@ -311,21 +311,20 @@ if not st.session_state.analysis_col1:
                     Hãy phân tích kỹ các hình ảnh sản phẩm được tải lên.
                     {notes_instruction}
                     
-                    QUY TẮC BẮT BUỘC VỀ BIẾN THỂ BÁN CHẠY (HERO VARIANT):
-                    - Bạn PHẢI quét kỹ các hình ảnh giao diện được tải lên để tìm các nhãn, biểu tượng thể hiện sản phẩm bán chạy (như icon ngọn lửa 🔥, chữ "Hot", lượt mua cao). 
+                    QUY TẮC BẮT BUỘC VỀ BIẾN THỂ & ĐỒNG NHẤT TRANG PHỤC (OUTFIT & HERO VARIANT LOCK):
+                    - Bạn PHẢI quét kỹ các hình ảnh giao diện được tải lên để tìm nhãn, biểu tượng thể hiện sản phẩm bán chạy (icon ngọn lửa 🔥, chữ "Hot"). 
                     - BIẾN THỂ NÀO CÓ ICON 🔥 HOẶC NHÃN HOT (Ví dụ: Đầm ĐEN-34D có icon Hot trong ảnh) PHẢI ĐƯỢC TỰ ĐỘNG XÁC ĐỊNH LÀ BIẾN THỂ CHỦ LỰC (HERO VARIANT)[cite: 13].
-                    - Toàn bộ nội dung phân tích và 3 kịch bản quảng cáo phía dưới BẮT BUỘC phải lấy biến thể mang nhãn Hot 🔥 đó làm tâm điểm xuyên suốt.
+                    - **ĐỒNG NHẤT TRANG PHỤC 100%:** Xác định chính xác toàn bộ bộ trang phục của nhân vật KOC trong biến thể Hot đó (Ví dụ: kiểu váy, áo trong, áo ngoài, phụ kiện dây áo, giày dép...) và **bắt buộc giữ nguyên vẹn bộ trang phục này xuyên suốt từ phân cảnh đầu tiên đến phân cảnh cuối cùng** của tất cả các kịch bản. Tuyệt đối không được thay đổi trang phục giữa các cảnh.
                     
                     QUY TẮC CẤM TUYỆT ĐỐI VỀ VIDEO & HÌNH ẢNH:
                     - CẤM dùng từ ngữ livestream ("mọi người ơi", "giỏ hàng phiên live", "giảm theo suất", "vào giỏ hàng").
                     - CẤM hiển thị phần 3 câu hook giữ chân người xem.
                     - **TUYỆT ĐỐI KHÔNG TEXT, KHÔNG LOGO, KHÔNG NHẠC NỀN** trong mô tả phân cảnh hoặc khi tạo ảnh/video (chỉ cho phép âm thanh hiệu ứng sound effects).
                     
-                    QUY TRÌNH SÁNG TẠO KỊCH BẢN CHUẨN (CỰC KỲ QUAN TRỌNG):
-                    1. Mỗi phân cảnh video có thời lượng cố định chuẩn **8 giây**.
-                    2. **Giới hạn tuyệt đối từ vựng:** Mỗi phân cảnh 8 giây **chỉ chứa từ 35 đến tối đa 40 chữ** trong phần lời thoại để KOC đọc thong thả, tự nhiên, rõ ràng không bị vấp/quá nhanh.
-                    3. **Linh hoạt số lượng phân cảnh:** Nếu nội dung dài, hãy **tự động chia thành nhiều phân cảnh hơn (từ 4 đến 5 phân cảnh)** thay vì ép buộc gò bó trong 3 phân cảnh.
-                    4. Trong mỗi phân cảnh, cấu trúc bắt buộc phải: **Hình ảnh mô tả (Ở TRÊN)** và **Lời thoại chi tiết của phân cảnh đó (Ở DƯỚI)**.
+                    QUY TRÌNH SÁNG TẠO KỊCH BẢN CHUẨN:
+                    1. Mỗi phân cảnh video có thời lượng cố định chuẩn **8 giây**, với dung lượng lời thoại **chỉ từ 35 đến 40 chữ** để KOC đọc thong thả, tự nhiên.
+                    2. Nếu nội dung dài, tự động chia thành nhiều phân cảnh (4-5 phân cảnh).
+                    3. Cấu trúc mỗi phân cảnh: **Hình ảnh mô tả (Ở TRÊN)** và **Lời thoại chi tiết của phân cảnh đó (Ở DƯỚI)**.
                     
                     Dòng đầu tiên PHẢI ghi chính xác tên sản phẩm (Ví dụ: Tên sản phẩm: Đầm body...).
                     
@@ -333,7 +332,7 @@ if not st.session_state.analysis_col1:
                     ---SPLIT_COL1_START---
                     ### 📌 Cột Trái: Chân dung & Hero Variant Hot 🔥
                     - **1. Chân dung Khách hàng & Đặc tính:** ...
-                    - **2. KOC Chuẩn Việt, Stylist & Khóa Màu (Hero Variant Hot 🔥):** ...
+                    - **2. KOC Chuẩn Việt, Stylist & Khóa Màu (Hero Variant Hot 🔥 & Đồng Nhất Trang Phục):** ... (Mô tả chi tiết trang phục cố định xuyên suốt)
                     ---SPLIT_COL1_END---
 
                     ---SPLIT_COL2_START---
@@ -343,42 +342,39 @@ if not st.session_state.analysis_col1:
                     ---SPLIT_COL2_END---
                     
                     ---SPLIT_SCENE_1---
-                    ### 🎬 Kịch bản 1: Góc Review Thực Tế / Xưởng tận gốc (Tập trung biến thể Hot)
+                    ### 🎬 Kịch bản 1: Góc Review Thực Tế / Xưởng tận gốc (Đồng nhất trang phục)
                     - **Phân cảnh 1 (8 giây - 35-40 chữ):**
-                      - *Hình ảnh:* [Mô tả chi tiết góc máy, hoàn toàn KHÔNG TEXT, KHÔNG LOGO]
+                      - *Hình ảnh:* [Mô tả chi tiết góc máy, GIỮ NGUYÊN 100% TRANG PHỤC CỐ ĐỊNH, KHÔNG TEXT, KHÔNG LOGO]
                       - *Lời thoại phân cảnh (Nhân vật đang nói):* [Lời thoại chuẩn 35-40 chữ]
                     - **Phân cảnh 2 (8 giây - 35-40 chữ):**
-                      - *Hình ảnh:* [Mô tả chi tiết góc máy, hoàn toàn KHÔNG TEXT, KHÔNG LOGO]
+                      - *Hình ảnh:* [Mô tả chi tiết góc máy, GIỮ NGUYÊN 100% TRANG PHỤC CỐ ĐỊNH, KHÔNG TEXT, KHÔNG LOGO]
                       - *Lời thoại phân cảnh (Nhân vật đang nói):* [Lời thoại chuẩn 35-40 chữ]
                     - **Phân cảnh 3 (8 giây - 35-40 chữ):**
-                      - *Hình ảnh:* [Mô tả chi tiết góc máy, hoàn toàn KHÔNG TEXT, KHÔNG LOGO]
+                      - *Hình ảnh:* [Mô tả chi tiết góc máy, GIỮ NGUYÊN 100% TRANG PHỤC CỐ ĐỊNH, KHÔNG TEXT, KHÔNG LOGO]
                       - *Lời thoại phân cảnh (Nhân vật đang nói):* [Lời thoại chuẩn 35-40 chữ]
-                    - **Phân cảnh 4 (8 giây - 35-40 chữ - Nếu cần thiết):**
-                      - *Hình ảnh:* [...]
-                      - *Lời thoại phân cảnh (Nhân vật đang nói):* [...]
                     
                     ---SPLIT_SCENE_2---
-                    ### 🎬 Kịch bản 2: Góc Nỗi đau & Tình huống kịch tính (Tập trung biến thể Hot)
+                    ### 🎬 Kịch bản 2: Góc Nỗi đau & Tình huống kịch tính (Đồng nhất trang phục)
                     - **Phân cảnh 1 (8 giây - 35-40 chữ):**
-                      - *Hình ảnh:* [...]
+                      - *Hình ảnh:* [Mô tả chi tiết, GIỮ NGUYÊN 100% TRANG PHỤC CỐ ĐỊNH, KHÔNG TEXT, KHÔNG LOGO]
                       - *Lời thoại phân cảnh (Nhân vật đang nói):* [...]
                     - **Phân cảnh 2 (8 giây - 35-40 chữ):**
-                      - *Hình ảnh:* [...]
+                      - *Hình ảnh:* [Mô tả chi tiết, GIỮ NGUYÊN 100% TRANG PHỤC CỐ ĐỊNH, KHÔNG TEXT, KHÔNG LOGO]
                       - *Lời thoại phân cảnh (Nhân vật đang nói):* [...]
                     - **Phân cảnh 3 (8 giây - 35-40 chữ):**
-                      - *Hình ảnh:* [...]
+                      - *Hình ảnh:* [Mô tả chi tiết, GIỮ NGUYÊN 100% TRANG PHỤC CỐ ĐỊNH, KHÔNG TEXT, KHÔNG LOGO]
                       - *Lời thoại phân cảnh (Nhân vật đang nói):* [...]
                     
                     ---SPLIT_SCENE_3---
-                    ### 🎬 Kịch bản 3: Góc Flash Sale / Săn Sale sốc (Tập trung biến thể Hot)
+                    ### 🎬 Kịch bản 3: Góc Flash Sale / Săn Sale sốc (Đồng nhất trang phục)
                     - **Phân cảnh 1 (8 giây - 35-40 chữ):**
-                      - *Hình ảnh:* [...]
+                      - *Hình ảnh:* [Mô tả chi tiết, GIỮ NGUYÊN 100% TRANG PHỤC CỐ ĐỊNH, KHÔNG TEXT, KHÔNG LOGO]
                       - *Lời thoại phân cảnh (Nhân vật đang nói):* [...]
                     - **Phân cảnh 2 (8 giây - 35-40 chữ):**
-                      - *Hình ảnh:* [...]
+                      - *Hình ảnh:* [Mô tả chi tiết, GIỮ NGUYÊN 100% TRANG PHỤC CỐ ĐỊNH, KHÔNG TEXT, KHÔNG LOGO]
                       - *Lời thoại phân cảnh (Nhân vật đang nói):* [...]
                     - **Phân cảnh 3 (8 giây - 35-40 chữ):**
-                      - *Hình ảnh:* [...]
+                      - *Hình ảnh:* [Mô tả chi tiết, GIỮ NGUYÊN 100% TRANG PHỤC CỐ ĐỊNH, KHÔNG TEXT, KHÔNG LOGO]
                       - *Lời thoại phân cảnh (Nhân vật đang nói):* [...]
                     """
           contents.append(prompt_text)
@@ -423,7 +419,7 @@ if not st.session_state.analysis_col1:
               st.session_state.analysis_col1 + "\n---SPLIT_COL1_END---\n" + st.session_state.analysis_col2,
               full_text,
           )
-          st.success("✅ Phân tích thành công theo biến thể Hot 🔥 và đã lưu lên Supabase!")
+          st.success("✅ Phân tích thành công, đồng nhất trang phục và đã lưu lên Supabase!")
           st.rerun()
         except Exception as e:
           st.error(f"Lỗi khi gọi API: {e}")
@@ -433,7 +429,7 @@ if st.session_state.analysis_col1:
   st.markdown("<br>", unsafe_allow_html=True)
   st.markdown(
       "<h2 style='text-align: center; color: #4F46E5;'>🔍 Phân Tích Biến Thể Hot"
-      " & Chi Tiết Sản Phẩm</h2>",
+      " & Đồng Nhất Trang Phục</h2>",
       unsafe_allow_html=True,
   )
   st.markdown("<br>", unsafe_allow_html=True)
@@ -454,12 +450,12 @@ if st.session_state.analysis_col1:
   )
   st.markdown("<br>", unsafe_allow_html=True)
 
-  # --- HÀM XỬ LÝ HIỂN THỊ KỊCH BẢN VÀ PROMPT 2 CỘT GỌN GÀNG (TÍCH HỢP KHẨU HÌNH THOẠI) ---
+  # --- HÀM XỬ LÝ HIỂN THỊ KỊCH BẢN VÀ PROMPT 2 CỘT GỌN GÀNG (KHÓA CHẶT TRANG PHỤC) ---
   def handle_script_section(script_title, script_content, state_key):
     st.markdown(script_content)
     
     if st.button(f"👉 Tạo Prompt Ảnh & Video cho {script_title}", key=f"btn_{state_key}", type="primary", use_container_width=True):
-      with st.spinner(f"🤖 Đang tạo Prompt chuẩn Ảnh & Video (Kèm khẩu hình thoại nhân vật) cho {script_title}..."):
+      with st.spinner(f"🤖 Đang tạo Prompt chuẩn Ảnh & Video (Khóa đồng bộ trang phục 100%) cho {script_title}..."):
         try:
           if "GEMINI_API_KEY" in st.secrets:
             genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
@@ -468,21 +464,21 @@ if st.session_state.analysis_col1:
           model = genai.GenerativeModel("gemini-3.8-flash")
           res = model.generate_content(
               f"Dựa vào kịch bản sau, hãy xuất ra Prompt chuẩn bằng tiếng Anh cho từng phân cảnh:\n"
-              f"1. Prompt Ảnh tĩnh (Midjourney/Flux) (Nghiêm ngặt: không text, không logo).\n"
-              f"2. Prompt Video (Veo 3 Pro) (Nghiêm ngặt: không text, không logo, không nhạc nền; ĐẶC BIỆT: Mô tả nhân vật đang cất lời thoại với khẩu hình miệng mấp máy khớp nội dung lời thoại của phân cảnh).\n"
+              f"1. Prompt Ảnh tĩnh (Midjourney/Flux) (Nghiêm ngặt: không text, không logo, GIỮ NGUYÊN VẸN bộ trang phục của biến thể Hot xuyên suốt mọi cảnh).\n"
+              f"2. Prompt Video (Veo 3 Pro) (Nghiêm ngặt: không text, không logo, không nhạc nền; GIỮ CỐ ĐỊNH TRANG PHỤC; nhân vật cất lời thoại với khẩu hình miệng mấp máy khớp nội dung).\n"
               f"Hãy trả về kết quả tuân thủ đúng định dạng cho từng cảnh xuất hiện trong kịch bản:\n"
               f"### CẢNH 1\n"
-              f"IMG_PROMPT: [Nội dung prompt ảnh cảnh 1]\n"
-              f"VID_PROMPT: [Nội dung prompt video cảnh 1 kèm khẩu hình thoại]\n\n"
+              f"IMG_PROMPT: [Nội dung prompt ảnh cảnh 1 cố định trang phục]\n"
+              f"VID_PROMPT: [Nội dung prompt video cảnh 1 cố định trang phục + khẩu hình thoại]\n\n"
               f"### CẢNH 2\n"
-              f"IMG_PROMPT: [Nội dung prompt ảnh cảnh 2]\n"
-              f"VID_PROMPT: [Nội dung prompt video cảnh 2 kèm khẩu hình thoại]\n\n"
+              f"IMG_PROMPT: [Nội dung prompt ảnh cảnh 2 cố định trang phục]\n"
+              f"VID_PROMPT: [Nội dung prompt video cảnh 2 cố định trang phục + khẩu hình thoại]\n\n"
               f"### CẢNH 3\n"
-              f"IMG_PROMPT: [Nội dung prompt ảnh cảnh 3]\n"
-              f"VID_PROMPT: [Nội dung prompt video cảnh 3 kèm khẩu hình thoại]\n\n{script_content}"
+              f"IMG_PROMPT: [Nội dung prompt ảnh cảnh 3 cố định trang phục]\n"
+              f"VID_PROMPT: [Nội dung prompt video cảnh 3 cố định trang phục + khẩu hình thoại]\n\n{script_content}"
           )
           st.session_state[state_key] = res.text
-          st.success(f"✅ Đã tạo xong Prompt tích hợp thoại cho {script_title}!")
+          st.success(f"✅ Đã tạo xong Prompt đồng bộ trang phục cho {script_title}!")
           st.rerun()
         except Exception as e:
           st.error(f"Lỗi: {e}")
@@ -490,7 +486,7 @@ if st.session_state.analysis_col1:
     # Nếu đã có prompt, hiển thị giao diện 2 cột đối xứng cho từng cảnh gọn gàng
     p_text = st.session_state.get(state_key)
     if p_text:
-      st.markdown(f"<br><h4>🎯 Bộ Prompt Tinh Gọn (Kèm Khẩu Hình Thoại) Cho {script_title}</h4>", unsafe_allow_html=True)
+      st.markdown(f"<br><h4>🎯 Bộ Prompt Tinh Gọn (Đồng Nhất Trang Phục & Thoại) Cho {script_title}</h4>", unsafe_allow_html=True)
       
       scenes = p_text.split("### CẢNH")
       for sc in scenes[1:]:
@@ -509,11 +505,11 @@ if st.session_state.analysis_col1:
         p_col1, p_col2 = st.columns(2)
         
         with p_col1:
-          st.markdown("📷 **Prompt Ảnh Tĩnh (Midjourney / Flux):**")
+          st.markdown("📷 **Prompt Ảnh Tĩnh (Midjourney / Flux - Cố định trang phục):**")
           st.code(img_p if img_p else sc, language="text")
 
         with p_col2:
-          st.markdown("🎥 **Prompt Video (Veo 3 Pro - Kèm Khẩu Hình Thoại):**")
+          st.markdown("🎥 **Prompt Video (Veo 3 Pro - Cố định trang phục & Thoại):**")
           st.code(vid_p if vid_p else "Đang cập nhật...", language="text")
         
         st.markdown("---")
@@ -558,7 +554,7 @@ if st.session_state.analysis_col1:
         extra_prompt = f"""
                 Hãy viết THÊM 3 kịch bản quảng cáo mới hoàn toàn ở 3 góc tiếp cận mới.
                 {extra_note_instruction}
-                LƯU Ý NGHIÊM NGẶT: Bắt buộc khai thác biến thể mang nhãn Hot 🔥 làm trọng tâm. Mỗi phân cảnh 8 giây chỉ chứa 35-40 chữ. Hoàn toàn KHÔNG TEXT, KHÔNG LOGO, KHÔNG NHẠC NỀN.
+                LƯU Ý NGHIÊM NGẶT: Bắt buộc khai thác biến thể mang nhãn Hot 🔥 làm trọng tâm. Đồng nhất 100% trang phục xuyên suốt các cảnh. Mỗi phân cảnh 8 giây chỉ chứa 35-40 chữ. Hoàn toàn KHÔNG TEXT, KHÔNG LOGO, KHÔNG NHẠC NỀN.
                 """
         res_extra = model.generate_content(extra_prompt)
         st.session_state.script_3 += "\n\n" + res_extra.text
