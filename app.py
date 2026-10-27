@@ -146,7 +146,6 @@ def compress_image_for_ai(image_file, max_size=1024, quality=80):
 def clean_script_text(raw_text):
   if not raw_text:
     return "Đang cập nhật..."
-  # Xóa bỏ các ký tự số và dấu gạch ngang thừa ở đầu chuỗi (ví dụ: '1---', '2---')
   cleaned = raw_text.lstrip("1234567890-")
   return cleaned.strip()
 
@@ -546,7 +545,7 @@ if st.session_state.analysis_col1:
   )
 
   if st.button(
-      "🚀 Gọi thêm 3 Kịch bản mới theo yêu cầu", use_context_width=True if "use_context_width" in st.button.__code__.co_varnames else False, use_container_width=True
+      "🚀 Gọi thêm 3 Kịch bản mới theo yêu cầu", type="primary", use_container_width=True
   ):
     with st.spinner("🤖 AI đang sáng tạo thêm 3 góc tiếp cận mới..."):
       try:
