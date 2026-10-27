@@ -209,7 +209,7 @@ else:
           st.session_state.analysis_col1 = c1_split[0].replace("---SPLIT_COL1_START---", "").strip()
           
           c2_split = c1_split[1].split("---SPLIT_SCENE_")
-          st.session_state.analysis_col2 = c2_split[0].replace("---SPLIT_COL2_START---", "").strip()
+          st.session_state.analysis_col2 = c2_split[0].replace("---SPLIT_COL2_START---", "").replace("---SPLIT_COL2_END---", "").strip()
           
           st.session_state.script_1 = c2_split[1] if len(c2_split) > 1 else ""
           st.session_state.script_2 = c2_split[2] if len(c2_split) > 2 else ""
@@ -284,7 +284,7 @@ if not st.session_state.analysis_col1:
 
   if analyze_btn:
     if not product_images:
-      st.error("⚠️ Vui lòng tải lên ít nhất một ảnh sản phẩm!")
+      st.error("⚠️ Vui lòng tải lên ít nhất một ảnh sản phẩm thuần túy!")
     else:
       with st.spinner(
           "🤖 AI đang nén ảnh tối ưu token, phân tích biến thể Hot và viết"
@@ -309,18 +309,20 @@ if not st.session_state.analysis_col1:
                     Bạn là Giám đốc Sản xuất Video Quảng cáo AI chuyên nghiệp cho video ngắn dựng sẵn (Reels, TikTok - KHÔNG LIVESTREAM). Hãy phân tích các hình ảnh sản phẩm.
                     {notes_instruction}
                     
-                    QUY TẮC CẤM TUYỆT ĐỐI:
+                    QUY TẮC CẤM TUYỆT ĐỐI VỀ VIDEO & HÌNH ẢNH:
                     - CẤM dùng từ ngữ livestream ("mọi người ơi", "giỏ hàng phiên live", "giảm theo suất", "vào giỏ hàng").
                     - CẤM hiển thị phần 3 câu hook giữ chân người xem.
+                    - **TUYỆT ĐỐI KHÔNG TEXT, KHÔNG LOGO, KHÔNG NHẠC NỀN** trong toàn bộ mô tả phân cảnh hoặc khi tạo ảnh/video. Chỉ cho phép hiệu ứng âm thanh (sound effects) nếu có.
                     - BẮT BUỘC khóa chặt vào biến thể bán chạy nhất (Hero Variant) đã xác định xuyên suốt các kịch bản.
                     
                     QUY TRÌNH SÁNG TẠO KỊCH BẢN CHUẨN:
-                    1. Viết kịch bản LỜI THOẠI (Voiceover) tổng thể trước với nhịp đọc nhanh dồn dập, đủ dài cho toàn bộ video (từ 90 - 120 từ tương đương 3 phân cảnh).
-                    2. Dựa trực tiếp vào lời thoại đó để chia ra chính xác 3 PHÂN CẢNH, mỗi phân cảnh có thời lượng cố định chuẩn **8 giây**.
+                    1. Viết kịch bản LỜI THOẠI (Voiceover) tổng thể trước với nhịp đọc nhanh dồn dập, đủ dài cho toàn bộ video (90 - 120 từ tương đương 3 phân cảnh).
+                    2. Dựa trực tiếp vào lời thoại đó để chia ra chính xác 3 PHÂN CẢNH, mỗi phân cảnh chuẩn **8 giây**.
+                    3. Trong mỗi phân cảnh, cấu trúc bắt buộc phải: **Hình ảnh mô tả (Ở TRÊN)** và **Lời thoại chi tiết của phân cảnh đó (Ở DƯỚI)**.
                     
                     Dòng đầu tiên PHẢI ghi chính xác tên sản phẩm (Ví dụ: Tên sản phẩm: Đầm body...).
                     
-                    TRẢ VỀ KẾT QUẢ ĐÚNG THEO CẤU TRÚC PHÂN TÁCH SAU (DÙNG ĐÚNG CÁC THẺ NÀY ĐỂ CHIA 2 CỘT ĐỐI XỨNG):
+                    TRẢ VỀ KẾT QUẢ ĐÚNG THEO CẤU TRÚC PHÂN TÁCH SAU:
                     ---SPLIT_COL1_START---
                     ### 📌 Cột Trái: Chân dung & Hero Variant
                     - **1. Chân dung Khách hàng & Đặc tính:** ...
@@ -335,24 +337,42 @@ if not st.session_state.analysis_col1:
                     
                     ---SPLIT_SCENE_1---
                     ### 🎬 Kịch bản 1: Góc Review Thực Tế / Xưởng tận gốc
-                    - **Kịch bản Lời thoại Voiceover (Đầy đủ 90-120 từ, nhịp đọc nhanh Hà Nội):** [...]
-                    - **Phân cảnh 1 (8 giây):** [...]
-                    - **Phân cảnh 2 (8 giây):** [...]
-                    - **Phân cảnh 3 (8 giây):** [...]
+                    - **Kịch bản Lời thoại Voiceover Tổng thể (90-120 từ, nhịp đọc nhanh Hà Nội):** [...]
+                    - **Phân cảnh 1 (8 giây):**
+                      - *Hình ảnh:* [Mô tả chi tiết góc máy, diễn xuất nhân vật, hoàn toàn KHÔNG TEXT, KHÔNG LOGO]
+                      - *Lời thoại phân cảnh:* [Lời thoại tương ứng]
+                    - **Phân cảnh 2 (8 giây):**
+                      - *Hình ảnh:* [Mô tả chi tiết góc máy, hoàn toàn KHÔNG TEXT, KHÔNG LOGO]
+                      - *Lời thoại phân cảnh:* [Lời thoại tương ứng]
+                    - **Phân cảnh 3 (8 giây):**
+                      - *Hình ảnh:* [Mô tả chi tiết góc máy, hoàn toàn KHÔNG TEXT, KHÔNG LOGO]
+                      - *Lời thoại phân cảnh:* [Lời thoại tương ứng]
                     
                     ---SPLIT_SCENE_2---
                     ### 🎬 Kịch bản 2: Góc Nỗi đau & Tình huống kịch tính
-                    - **Kịch bản Lời thoại Voiceover (Đầy đủ 90-120 từ, nhịp đọc nhanh Hà Nội):** [...]
-                    - **Phân cảnh 1 (8 giây):** [...]
-                    - **Phân cảnh 2 (8 giây):** [...]
-                    - **Phân cảnh 3 (8 giây):** [...]
+                    - **Kịch bản Lời thoại Voiceover Tổng thể (90-120 từ, nhịp đọc nhanh Hà Nội):** [...]
+                    - **Phân cảnh 1 (8 giây):**
+                      - *Hình ảnh:* [Mô tả chi tiết, hoàn toàn KHÔNG TEXT, KHÔNG LOGO]
+                      - *Lời thoại phân cảnh:* [...]
+                    - **Phân cảnh 2 (8 giây):**
+                      - *Hình ảnh:* [Mô tả chi tiết, hoàn toàn KHÔNG TEXT, KHÔNG LOGO]
+                      - *Lời thoại phân cảnh:* [...]
+                    - **Phân cảnh 3 (8 giây):**
+                      - *Hình ảnh:* [Mô tả chi tiết, hoàn toàn KHÔNG TEXT, KHÔNG LOGO]
+                      - *Lời thoại phân cảnh:* [...]
                     
                     ---SPLIT_SCENE_3---
                     ### 🎬 Kịch bản 3: Góc Flash Sale / Săn Sale sốc
-                    - **Kịch bản Lời thoại Voiceover (Đầy đủ 90-120 từ, nhịp đọc nhanh Hà Nội):** [...]
-                    - **Phân cảnh 1 (8 giây):** [...]
-                    - **Phân cảnh 2 (8 giây):** [...]
-                    - **Phân cảnh 3 (8 giây):** [...]
+                    - **Kịch bản Lời thoại Voiceover Tổng thể (90-120 từ, nhịp đọc nhanh Hà Nội):** [...]
+                    - **Phân cảnh 1 (8 giây):**
+                      - *Hình ảnh:* [Mô tả chi tiết, hoàn toàn KHÔNG TEXT, KHÔNG LOGO]
+                      - *Lời thoại phân cảnh:* [...]
+                    - **Phân cảnh 2 (8 giây):**
+                      - *Hình ảnh:* [Mô tả chi tiết, hoàn toàn KHÔNG TEXT, KHÔNG LOGO]
+                      - *Lời thoại phân cảnh:* [...]
+                    - **Phân cảnh 3 (8 giây):**
+                      - *Hình ảnh:* [Mô tả chi tiết, hoàn toàn KHÔNG TEXT, KHÔNG LOGO]
+                      - *Lời thoại phân cảnh:* [...]
                     """
           contents.append(prompt_text)
 
@@ -401,7 +421,7 @@ if not st.session_state.analysis_col1:
         except Exception as e:
           st.error(f"Lỗi khi gọi API: {e}")
 
-# --- 6. HIỂN THỊ GIAO DIỆN CHIA 2 CỘT ĐỐI XỨNG HOÀN HẢO ---
+# --- 6. HIỂN THỊ GIAO DIỆN CHIA 2 CỘT ĐỐI XỨNG & KHÔNG CÓ TEXT/LOGO ---
 if st.session_state.analysis_col1:
   st.markdown("<br>", unsafe_allow_html=True)
   st.markdown(
@@ -448,7 +468,7 @@ if st.session_state.analysis_col1:
   st.markdown(st.session_state.script_1)
   st.markdown("</div>", unsafe_allow_html=True)
   if st.button(
-      "👉 Xuất Prompt Veo 3 cho Kịch bản 1",
+      "👉 Xuất Prompt Veo 3 cho Kịch bản 1 (Không Text, Không Logo)",
       key="btn_v1",
       type="primary",
       use_container_width=True,
@@ -461,7 +481,7 @@ if st.session_state.analysis_col1:
           genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
         model = genai.GenerativeModel("gemini-3.8-flash")
         res_v = model.generate_content(
-            f"Dựa vào Kịch bản 1 sau (có voice đầy đủ và các phân cảnh 8 giây), hãy xuất Prompt Veo 3 đồng bộ tuyệt đối:\n{st.session_state.script_1}"
+            f"Dựa vào Kịch bản 1 sau, hãy xuất Prompt Veo 3 đồng bộ tuyệt đối (Lưu ý nghiêm ngặt: Tuyệt đối không text, không logo, không nhạc nền, chỉ có âm thanh hiệu ứng):\n{st.session_state.script_1}"
         )
         st.session_state.veo_prompts = res_v.text
         st.success("✅ Đã xuất Prompt Veo 3 Kịch bản 1 thành công!")
@@ -480,7 +500,7 @@ if st.session_state.analysis_col1:
   st.markdown(st.session_state.script_2)
   st.markdown("</div>", unsafe_allow_html=True)
   if st.button(
-      "👉 Xuất Prompt Veo 3 cho Kịch bản 2",
+      "👉 Xuất Prompt Veo 3 cho Kịch bản 2 (Không Text, Không Logo)",
       key="btn_v2",
       type="primary",
       use_container_width=True,
@@ -493,7 +513,7 @@ if st.session_state.analysis_col1:
           genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
         model = genai.GenerativeModel("gemini-3.8-flash")
         res_v = model.generate_content(
-            f"Dựa vào Kịch bản 2 sau (có voice đầy đủ và các phân cảnh 8 giây), hãy xuất Prompt Veo 3 đồng bộ tuyệt đối:\n{st.session_state.script_2}"
+            f"Dựa vào Kịch bản 2 sau, hãy xuất Prompt Veo 3 đồng bộ tuyệt đối (Lưu ý nghiêm ngặt: Tuyệt đối không text, không logo, không nhạc nền, chỉ có âm thanh hiệu ứng):\n{st.session_state.script_2}"
         )
         st.session_state.veo_prompts = res_v.text
         st.success("✅ Đã xuất Prompt Veo 3 Kịch bản 2 thành công!")
@@ -512,7 +532,7 @@ if st.session_state.analysis_col1:
   st.markdown(st.session_state.script_3)
   st.markdown("</div>", unsafe_allow_html=True)
   if st.button(
-      "👉 Xuất Prompt Veo 3 cho Kịch bản 3",
+      "👉 Xuất Prompt Veo 3 cho Kịch bản 3 (Không Text, Không Logo)",
       key="btn_v3",
       type="primary",
       use_container_width=True,
@@ -525,7 +545,7 @@ if st.session_state.analysis_col1:
           genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
         model = genai.GenerativeModel("gemini-3.8-flash")
         res_v = model.generate_content(
-            f"Dựa vào Kịch bản 3 sau (có voice đầy đủ và các phân cảnh 8 giây), hãy xuất Prompt Veo 3 đồng bộ tuyệt đối:\n{st.session_state.script_3}"
+            f"Dựa vào Kịch bản 3 sau, hãy xuất Prompt Veo 3 đồng bộ tuyệt đối (Lưu ý nghiêm ngặt: Tuyệt đối không text, không logo, không nhạc nền, chỉ có âm thanh hiệu ứng):\n{st.session_state.script_3}"
         )
         st.session_state.veo_prompts = res_v.text
         st.success("✅ Đã xuất Prompt Veo 3 Kịch bản 3 thành công!")
@@ -562,7 +582,7 @@ if st.session_state.analysis_col1:
         extra_prompt = f"""
                 Hãy viết THÊM 3 kịch bản quảng cáo mới hoàn toàn ở 3 góc tiếp cận mới (So sánh chất lượng, Trải nghiệm bất ngờ, Chuyên gia phân tích).
                 {extra_note_instruction}
-                LƯU Ý: Viết kịch bản voice tổng thể (90-120 từ) trước rồi mới chia thành các phân cảnh chuẩn 8 giây. CẤM tuyệt đối dùng từ ngữ livestream và KHÔNG hiển thị câu hook. BẮT BUỘC tiếp tục bám sát và khai thác đúng biến thể Hot đã xác định.
+                LƯU Ý NGHIÊM NGẶT: Hoàn toàn KHÔNG TEXT, KHÔNG LOGO, KHÔNG NHẠC NỀN (chỉ có âm thanh hiệu ứng). Viết kịch bản voice tổng thể trước rồi mới chia thành các phân cảnh chuẩn 8 giây (mỗi phân cảnh có hình ảnh ở trên và lời thoại phân cảnh ở dưới).
                 """
         res_extra = model.generate_content(extra_prompt)
         st.session_state.script_3 += "\n\n" + res_extra.text
@@ -593,6 +613,6 @@ if st.session_state.veo_prompts:
       unsafe_allow_html=True,
   )
   st.markdown(
-      "Sao chép các Prompt dưới đây dán trực tiếp vào Veo 3 để tạo video:"
+      "Sao chép các Prompt dưới đây (Đảm bảo không text, không logo, không nhạc nền) để dán trực tiếp vào Veo 3:"
   )
   st.code(st.session_state.veo_prompts, language="text")
