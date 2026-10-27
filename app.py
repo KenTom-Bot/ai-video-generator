@@ -6,7 +6,7 @@ import google.generativeai as genai
 from PIL import Image
 from supabase import create_client, Client
 
-# --- 0. CẤU HÌNH HỆ THỐNG & BẢO MẬT ĐĂng NHẬP ---
+# --- 0. CẤU HÌNH HỆ THỐNG & BẢO MẬT ĐĂNG NHẬP ---
 st.set_page_config(
     page_title="AI Video Viral",
     page_icon="🎬",
@@ -305,15 +305,14 @@ if not st.session_state.product_analysis:
                     - CẤM hiển thị phần 3 câu hook giữ chân người xem.
                     - BẮT BUỘC khóa chặt vào biến thể bán chạy nhất (Hero Variant) đã xác định xuyên suốt các kịch bản.
                     
-                    QUY TRÌNH SÁNG TẠO KỊCH BẢN CHUẨN:
-                    1. Viết kịch bản LỜI THOẠI (Voiceover) chuẩn trước với nhịp đọc nhanh dồn dập (32-42 từ).
-                    2. Dựa trực tiếp vào lời thoại đó để chia ra các PHÂN CẢNH, mỗi phân cảnh có thời lượng cố định chuẩn **8 giây**.
+                    QUY TRÌNH SÁNG TẠO KỊCH BẢN CHUẨN (CỰC KỲ QUAN TRỌNG):
+                    1. Viết kịch bản LỜI THOẠI (Voiceover) tổng thể trước với nhịp đọc nhanh dồn dập, đủ dài cho toàn bộ video (tổng từ 90 - 120 từ tương đương 3 phân cảnh).
+                    2. Dựa trực tiếp vào kịch bản lời thoại tổng thể đó để chia ra chính xác 3 PHÂN CẢNH, mỗi phân cảnh có thời lượng cố định chuẩn **8 giây** (tổng video 24 giây). Lời thoại phải được phân bổ đều hoặc hiển thị đầy đủ xuyên suốt các phân cảnh.
                     
                     Dòng đầu tiên PHẢI ghi chính xác tên sản phẩm (Ví dụ: Tên sản phẩm: Đầm body...).
                     
                     TRẢ VỀ KẾT QUẢ ĐÚNG THEO CẤU TRÚC PHÂN TÁCH SAU (SỬ DỤNG CHÍNH XÁC CÁC THẺ NÀY):
                     ---SPLIT_ANALYZE---
-                    ### 🔍 Phân Tích Chi Tiết Sản Phẩm
                     - **1. Chân dung Khách hàng & Đặc tính:** ...
                     - **2. KOC Chuẩn Việt, Stylist & Khóa Màu (Hero Variant Hot):** ...
                     - **3. Giải phẫu Sản phẩm & Khóa Hình học 3D:** ...
@@ -321,21 +320,21 @@ if not st.session_state.product_analysis:
                     
                     ---SPLIT_SCENE_1---
                     ### 🎬 Kịch bản 1: Góc Review Thực Tế / Xưởng tận gốc
-                    - **Kịch bản Lời thoại Voiceover:** [...]
+                    - **Kịch bản Lời thoại Voiceover (Đầy đủ 90-120 từ, nhịp đọc nhanh Hà Nội):** [...]
                     - **Phân cảnh 1 (8 giây):** [...]
                     - **Phân cảnh 2 (8 giây):** [...]
                     - **Phân cảnh 3 (8 giây):** [...]
                     
                     ---SPLIT_SCENE_2---
                     ### 🎬 Kịch bản 2: Góc Nỗi đau & Tình huống kịch tính
-                    - **Kịch bản Lời thoại Voiceover:** [...]
+                    - **Kịch bản Lời thoại Voiceover (Đầy đủ 90-120 từ, nhịp đọc nhanh Hà Nội):** [...]
                     - **Phân cảnh 1 (8 giây):** [...]
                     - **Phân cảnh 2 (8 giây):** [...]
                     - **Phân cảnh 3 (8 giây):** [...]
                     
                     ---SPLIT_SCENE_3---
                     ### 🎬 Kịch bản 3: Góc Flash Sale / Săn Sale sốc
-                    - **Kịch bản Lời thoại Voiceover:** [...]
+                    - **Kịch bản Lời thoại Voiceover (Đầy đủ 90-120 từ, nhịp đọc nhanh Hà Nội):** [...]
                     - **Phân cảnh 1 (8 giây):** [...]
                     - **Phân cảnh 2 (8 giây):** [...]
                     - **Phân cảnh 3 (8 giây):** [...]
@@ -345,7 +344,6 @@ if not st.session_state.product_analysis:
           response = model.generate_content(contents)
           full_text = response.text
 
-          # Tách an toàn tuyệt đối dựa vào các thẻ phân tách rõ ràng
           try:
             p_split = full_text.split("---SPLIT_ANALYZE---")
             analyze_part = p_split[1].split("---SPLIT_SCENE_")[0] if len(p_split) > 1 else full_text
@@ -388,7 +386,7 @@ if not st.session_state.product_analysis:
         except Exception as e:
           st.error(f"Lỗi khi gọi API: {e}")
 
-# --- 6. HIỂN THỊ GIAO DIỆN SẠCH SẼ, 2 CỘT PHÂN TÍCH & KỊCH BẢN ---
+# --- 6. HIỂN THỊ GIAO DIỆN SẠCH SẼ, CHIA 2 CỘT CÂN ĐỐI & KỊCH BẢN ---
 if st.session_state.product_analysis:
   st.markdown("<br>", unsafe_allow_html=True)
   st.markdown(
@@ -401,10 +399,14 @@ if st.session_state.product_analysis:
   analysis_text = st.session_state.product_analysis
   col_left, col_right = st.columns(2)
 
-  mid_idx = len(analysis_text) // 2
-  split_idx = analysis_text.find("\n\n", mid_idx)
-  if split_idx == -1:
-    split_idx = mid_idx
+  # Cải tiến chia cột: Tách các ý gạch đầu dòng `- **` để phân bố đều 2 cột chính xác tuyệt đối
+  lines = [line for line in analysis_text.split("\n") if line.strip()]
+  half_len = len(lines) // 2
+  if half_len == 0:
+    half_len = 1
+
+  col1_text = "\n".join(lines[:half_len])
+  col2_text = "\n".join(lines[half_len:])
 
   with col_left:
     st.markdown(
@@ -412,7 +414,7 @@ if st.session_state.product_analysis:
         ' 10px; border: 1px solid #E5E7EB;">',
         unsafe_allow_html=True,
     )
-    st.markdown(analysis_text[:split_idx])
+    st.markdown(col1_text)
     st.markdown("</div>", unsafe_allow_html=True)
 
   with col_right:
@@ -421,7 +423,7 @@ if st.session_state.product_analysis:
         ' 10px; border: 1px solid #E5E7EB;">',
         unsafe_allow_html=True,
     )
-    st.markdown(analysis_text[split_idx:])
+    st.markdown(col2_text)
     st.markdown("</div>", unsafe_allow_html=True)
 
   st.markdown("<br><hr><br>", unsafe_allow_html=True)
@@ -458,7 +460,7 @@ if st.session_state.product_analysis:
           genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
         model = genai.GenerativeModel("gemini-3.8-flash")
         res_v = model.generate_content(
-            f"Dựa vào Kịch bản 1 sau (có voice và các phân cảnh 8 giây), hãy xuất Prompt Veo 3 đồng bộ tuyệt đối:\n{st.session_state.script_1}"
+            f"Dựa vào Kịch bản 1 sau (có voice đầy đủ và các phân cảnh 8 giây), hãy xuất Prompt Veo 3 đồng bộ tuyệt đối:\n{st.session_state.script_1}"
         )
         st.session_state.veo_prompts = res_v.text
         st.success("✅ Đã xuất Prompt Veo 3 Kịch bản 1 thành công!")
@@ -494,7 +496,7 @@ if st.session_state.product_analysis:
           genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
         model = genai.GenerativeModel("gemini-3.8-flash")
         res_v = model.generate_content(
-            f"Dựa vào Kịch bản 2 sau (có voice và các phân cảnh 8 giây), hãy xuất Prompt Veo 3 đồng bộ tuyệt đối:\n{st.session_state.script_2}"
+            f"Dựa vào Kịch bản 2 sau (có voice đầy đủ và các phân cảnh 8 giây), hãy xuất Prompt Veo 3 đồng bộ tuyệt đối:\n{st.session_state.script_2}"
         )
         st.session_state.veo_prompts = res_v.text
         st.success("✅ Đã xuất Prompt Veo 3 Kịch bản 2 thành công!")
@@ -530,7 +532,7 @@ if st.session_state.product_analysis:
           genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
         model = genai.GenerativeModel("gemini-3.8-flash")
         res_v = model.generate_content(
-            f"Dựa vào Kịch bản 3 sau (có voice và các phân cảnh 8 giây), hãy xuất Prompt Veo 3 đồng bộ tuyệt đối:\n{st.session_state.script_3}"
+            f"Dựa vào Kịch bản 3 sau (có voice đầy đủ và các phân cảnh 8 giây), hãy xuất Prompt Veo 3 đồng bộ tuyệt đối:\n{st.session_state.script_3}"
         )
         st.session_state.veo_prompts = res_v.text
         st.success("✅ Đã xuất Prompt Veo 3 Kịch bản 3 thành công!")
@@ -567,7 +569,7 @@ if st.session_state.product_analysis:
         extra_prompt = f"""
                 Hãy viết THÊM 3 kịch bản quảng cáo mới hoàn toàn ở 3 góc tiếp cận mới (So sánh chất lượng, Trải nghiệm bất ngờ, Chuyên gia phân tích).
                 {extra_note_instruction}
-                LƯU Ý: Viết kịch bản voice trước rồi mới chia thành các phân cảnh chuẩn 8 giây. CẤM tuyệt đối dùng từ ngữ livestream và KHÔNG hiển thị câu hook. BẮT BUỘC tiếp tục bám sát và khai thác đúng biến thể Hot đã xác định.
+                LƯU Ý: Viết kịch bản voice tổng thể (90-120 từ) trước rồi mới chia thành các phân cảnh chuẩn 8 giây. CẤM tuyệt đối dùng từ ngữ livestream và KHÔNG hiển thị câu hook. BẮT BUỘC tiếp tục bám sát và khai thác đúng biến thể Hot đã xác định.
                 """
         res_extra = model.generate_content(extra_prompt)
         st.session_state.script_3 += "\n\n" + res_extra.text
