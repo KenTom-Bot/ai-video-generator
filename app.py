@@ -13,13 +13,10 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# Thiết lập mật khẩu bảo vệ App (Bạn có thể đổi mật khẩu tại đây)
-ADMIN_PASSWORD = "123"  # <-- Mật khẩu truy cập app
+ADMIN_PASSWORD = "123"  # Mật khẩu truy cập app
 
 
 def check_password():
-  """Hàm kiểm tra trạng thái đăng nhập của người dùng"""
-
   def password_entered():
     if st.session_state["password"] == ADMIN_PASSWORD:
       st.session_state["password_correct"] = True
@@ -287,18 +284,19 @@ if analyze_btn:
         )
 
         prompt_text = f"""
-                Bạn là Giám đốc Sản xuất Video Quảng cáo AI chuyên nghiệp. Hãy phân tích toàn bộ các hình ảnh sản phẩm được cung cấp (bao gồm các góc độ, thông số, chi tiết khác nhau).
+                Bạn là Giám đốc Sản xuất Video Quảng cáo AI chuyên nghiệp. Hãy phân tích toàn bộ các hình ảnh sản phẩm được cung cấp.
                 {notes_instruction}
                 
-                Yêu cầu thực hiện:
-                1. Tổng hợp thông tin từ tất cả các hình ảnh để nhận diện chuẩn tên sản phẩm, chọn biến thể màu sắc chủ đạo (Hero Variant) dựa trên dấu hiệu bán chạy/lượt bán (nếu có).
-                2. Tự động quyết định Giới tính/Nhân vật phù hợp nhất với ngành hàng và khóa chặt chất giọng Hà Nội chuẩn tương ứng.
-                3. Thiết lập 6 Khóa đồng bộ: [CHARACTER_LOCK], [WARDROBE_LOCK], [BACKGROUND_LOCK], [VOICE_LOCK] (chuẩn Hà Nội), [PRODUCT_SCALE_&_COLOR_LOCK], [MECHANICS_&_PHYSICS_LOCK].
-                4. Viết ra ĐẦU TIÊN BỘ 3 KỊCH BẢN THOẠI KHÁC NHAU ở 3 góc tiếp cận (Định dạng rõ ràng Kịch bản 1, Kịch bản 2, Kịch bản 3):
+                Yêu cầu thực hiện trả về kết quả theo đúng định dạng các khối rõ ràng giống như các thẻ card bao gồm:
+                1. PHẦN PHÂN TÍCH CHI TIẾT SẢN PHẨM (Chia thành 4 khối thẻ card dạng lưới 2 cột: 
+                   - Thẻ 1: Chân dung Khách hàng & Hook 3s.
+                   - Thẻ 2: KOC Chuẩn Việt, Stylist & Khóa Màu.
+                   - Thẻ 3: Giải phẫu Sản phẩm & Khóa Hình học 3D.
+                   - Thẻ 4: Chuẩn Bối Cảnh & Mức Giá).
+                2. PHẦN 3 KỊCH BẢN THOẠI QUẢNG CÁO (Mỗi kịch bản hiển thị riêng biệt trong một khung thẻ card có tiêu đề rõ ràng, nhịp đọc nhanh dồn dập 32-42 từ/cảnh 8 giây, ngôn từ dân dã, cuốn hút):
                    - Kịch bản 1: Góc Review Thực Tế / Xưởng tận gốc.
                    - Kịch bản 2: Góc Nỗi đau & Tình huống kịch tính.
                    - Kịch bản 3: Góc Flash Sale / Săn Sale sốc.
-                Mỗi kịch bản phải có nhịp độ đọc nhanh dồn dập (32-42 từ/cảnh 8 giây), dùng từ ngữ dân dã, cuốn hút.
                 """
         contents.append(prompt_text)
 
@@ -316,52 +314,43 @@ if analyze_btn:
       except Exception as e:
         st.error(f"Lỗi khi gọi API: {e}")
 
-# --- 6. HIỂN THỊ KỊCH BẢN GỌN GÀNG, RÕ RÀNG THEO TỪNG TAB ---
+# --- 6. HIỂN THỊ KỊCH BẢN & PHÂN TÍCH DẠNG THẺ (CARDS) THEO HÀNG ---
 if st.session_state.generated_scripts:
   st.markdown("<br>", unsafe_allow_html=True)
   st.markdown(
-      "<h2 style='text-align: center; color: #4F46E5;'>📝 Kịch Bản Thoại Đã"
-      " Tạo</h2>",
+      "<h2 style='text-align: center; color: #4F46E5;'>🔍 Phân Tích Chi Tiết"
+      " & Kịch Bản Quảng Cáo</h2>",
       unsafe_allow_html=True,
   )
   st.markdown(
-      "<p style='text-align: center;'>Dưới đây là các kịch bản được chia theo"
-      " góc tiếp cận. Bạn có thể xem, chỉnh sửa hoặc bấm trực tiếp nút xuất"
-      " Prompt Veo 3 cho từng kịch bản:</p>",
+      "<p style='text-align: center;'>Thông tin phân tích và các kịch bản được"
+      " hiển thị rõ ràng theo từng hàng/thẻ bên dưới:</p>",
+      unsafe_allow_html=True,
+  )
+  st.markdown("<br>", unsafe_allow_html=True)
+
+  # Hiển thị toàn bộ nội dung phân tích & kịch bản do AI trả về trong khung card giao diện đẹp
+  st.markdown(
+      '<div style="background-color: #F9FAFB; padding: 25px; border-radius:'
+      ' 12px; border: 1px solid #E5E7EB;">',
+      unsafe_allow_html=True,
+  )
+  st.markdown(st.session_state.generated_scripts)
+  st.markdown("</div>", unsafe_allow_html=True)
+
+  st.markdown("<br>", unsafe_allow_html=True)
+  st.markdown(
+      "<h3 style='text-align: center; color: #10B981;'>🎯 Chọn Kịch Bản Để"
+      " Xuất Prompt Veo 3</h3>",
       unsafe_allow_html=True,
   )
 
-  # Cho phép chỉnh sửa tổng thể nếu muốn
-  with st.expander("✏️ Mở rộng để chỉnh sửa toàn bộ nội dung kịch bản gốc"):
-    edited_scripts = st.text_area(
-        "Nội dung kịch bản thoại",
-        value=st.session_state.generated_scripts,
-        height=300,
-    )
-    st.session_state.generated_scripts = edited_scripts
+  # Bố trí 3 nút bấm tương ứng cho 3 kịch bản theo hàng ngang (columns)
+  col_btn1, col_btn2, col_btn3 = st.columns(3)
 
-  st.markdown("<br>", unsafe_allow_html=True)
-
-  # Chia không gian hiển thị bằng 3 Tab tương ứng với 3 góc tiếp cận
-  tab1, tab2, tab3 = st.tabs([
-      "🎬 Kịch bản 1: Review Thực Tế",
-      "🚨 Kịch bản 2: Nỗi Đau / Kịch Tính",
-      "⚡ Kịch bản 3: Flash Sale Sốc",
-  ])
-
-  with tab1:
-    st.markdown("#### Góc Review Thực Tế / Xưởng Tận Gốc")
-    script_c1 = st.text_area(
-        "Chỉnh sửa Kịch bản 1",
-        value=st.session_state.generated_scripts,
-        height=220,
-        key="sc1",
-    )
+  with col_btn1:
     if st.button(
-        "👉 Chốt Kịch bản 1 & Xuất Prompt Veo 3",
-        key="btn_c1",
-        type="primary",
-        use_container_width=True,
+        "👉 Xuất Prompt Kịch bản 1", type="primary", use_container_width=True
     ):
       with st.spinner("🤖 Đang tạo Prompt Veo 3 cho Kịch bản 1..."):
         try:
@@ -372,27 +361,17 @@ if st.session_state.generated_scripts:
 
           model = genai.GenerativeModel("gemini-3.8-flash")
           res_v = model.generate_content(
-              f"Dựa vào kịch bản sau, hãy chia thành N phân cảnh (mỗi cảnh 8 giây) và xuất Prompt Veo 3 đồng bộ tuyệt đối:\n{script_c1}"
+              f"Dựa vào nội dung sau, hãy chia thành N phân cảnh (mỗi cảnh 8 giây) và xuất Prompt Veo 3 đồng bộ tuyệt đối cho Kịch bản 1:\n{st.session_state.generated_scripts}"
           )
           st.session_state.veo_prompts = res_v.text
-          st.success("✅ Đã xuất Prompt Veo 3 cho Kịch bản 1 thành công!")
+          st.success("✅ Đã xuất Prompt Veo 3 Kịch bản 1 thành công!")
           st.rerun()
         except Exception as e:
           st.error(f"Lỗi: {e}")
 
-  with tab2:
-    st.markdown("#### Góc Nỗi Đau & Tình Huống Kịch Tính")
-    script_c2 = st.text_area(
-        "Chỉnh sửa Kịch bản 2",
-        value=st.session_state.generated_scripts,
-        height=220,
-        key="sc2",
-    )
+  with col_btn2:
     if st.button(
-        "👉 Chốt Kịch bản 2 & Xuất Prompt Veo 3",
-        key="btn_c2",
-        type="primary",
-        use_container_width=True,
+        "👉 Xuất Prompt Kịch bản 2", type="primary", use_container_width=True
     ):
       with st.spinner("🤖 Đang tạo Prompt Veo 3 cho Kịch bản 2..."):
         try:
@@ -403,27 +382,17 @@ if st.session_state.generated_scripts:
 
           model = genai.GenerativeModel("gemini-3.8-flash")
           res_v = model.generate_content(
-              f"Dựa vào kịch bản sau, hãy chia thành N phân cảnh (mỗi cảnh 8 giây) và xuất Prompt Veo 3 đồng bộ tuyệt đối:\n{script_c2}"
+              f"Dựa vào nội dung sau, hãy chia thành N phân cảnh (mỗi cảnh 8 giây) và xuất Prompt Veo 3 đồng bộ tuyệt đối cho Kịch bản 2:\n{st.session_state.generated_scripts}"
           )
           st.session_state.veo_prompts = res_v.text
-          st.success("✅ Đã xuất Prompt Veo 3 cho Kịch bản 2 thành công!")
+          st.success("✅ Đã xuất Prompt Veo 3 Kịch bản 2 thành công!")
           st.rerun()
         except Exception as e:
           st.error(f"Lỗi: {e}")
 
-  with tab3:
-    st.markdown("#### Góc Flash Sale / Săn Sale Sốc")
-    script_c3 = st.text_area(
-        "Chỉnh sửa Kịch bản 3",
-        value=st.session_state.generated_scripts,
-        height=220,
-        key="sc3",
-    )
+  with col_btn3:
     if st.button(
-        "👉 Chốt Kịch bản 3 & Xuất Prompt Veo 3",
-        key="btn_c3",
-        type="primary",
-        use_container_width=True,
+        "👉 Xuất Prompt Kịch bản 3", type="primary", use_container_width=True
     ):
       with st.spinner("🤖 Đang tạo Prompt Veo 3 cho Kịch bản 3..."):
         try:
@@ -434,18 +403,17 @@ if st.session_state.generated_scripts:
 
           model = genai.GenerativeModel("gemini-3.8-flash")
           res_v = model.generate_content(
-              f"Dựa vào kịch bản sau, hãy chia thành N phân cảnh (mỗi cảnh 8 giây) và xuất Prompt Veo 3 đồng bộ tuyệt đối:\n{script_c3}"
+              f"Dựa vào nội dung sau, hãy chia thành N phân cảnh (mỗi cảnh 8 giây) và xuất Prompt Veo 3 đồng bộ tuyệt đối cho Kịch bản 3:\n{st.session_state.generated_scripts}"
           )
           st.session_state.veo_prompts = res_v.text
-          st.success("✅ Đã xuất Prompt Veo 3 cho Kịch bản 3 thành công!")
+          st.success("✅ Đã xuất Prompt Veo 3 Kịch bản 3 thành công!")
           st.rerun()
         except Exception as e:
           st.error(f"Lỗi: {e}")
 
   st.markdown("<br>", unsafe_allow_html=True)
-  # Nút gọi thêm kịch bản mới
   if st.button(
-      "➕ Gọi thêm 3 Kịch bản khác (Góc tiếp cận mới)",
+      "➕ Gọi thêm 3 Kịch bản khác (Góc tiếp cận mới & Flash Sale)",
       use_container_width=True,
   ):
     with st.spinner("🤖 AI đang sáng tạo thêm 3 góc tiếp cận mới..."):
@@ -456,17 +424,8 @@ if st.session_state.generated_scripts:
           genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
 
         model = genai.GenerativeModel("gemini-3.8-flash")
-        extra_notes_instruction = (
-            f"\n\n🚨 GHI CHÚ ƯU TIÊN CAO NHẤT TỪ NGƯỜI DÙNG: '{user_notes}'."
-            if user_notes.strip()
-            else ""
-        )
         extra_prompt = f"""
-                Hãy viết THÊM 3 kịch bản quảng cáo mới hoàn toàn cho sản phẩm này ở 3 góc tiếp cận khác:
-                1. Góc So sánh chất lượng với thị trường.
-                2. Góc Trải nghiệm thực tế bất ngờ của khách hàng.
-                3. Góc Chuyên gia ngành hàng phân tích.
-                {extra_notes_instruction}
+                Hãy viết THÊM 3 kịch bản quảng cáo mới hoàn toàn cho sản phẩm này ở 3 góc tiếp cận mới (So sánh chất lượng, Trải nghiệm bất ngờ, Chuyên gia phân tích).
                 Giữ nguyên nhịp đọc nhanh, khẩu ngữ dân dã, chia phân cảnh rõ ràng.
                 """
         res_extra = model.generate_content(extra_prompt)
@@ -490,5 +449,8 @@ if st.session_state.veo_prompts:
       "<h3 style='text-align: center; color: #10B981;'>🎯 Bộ Prompt Veo 3 Hoàn"
       " Chỉnh (Đồng bộ tuyệt đối)</h3>",
       unsafe_allow_html=True,
+  )
+  st.markdown(
+      "Sao chép các Prompt dưới đây dán trực tiếp vào Veo 3 để tạo video:"
   )
   st.code(st.session_state.veo_prompts, language="text")
