@@ -324,8 +324,8 @@ if st.sidebar.button("🚪 Đăng xuất", use_container_width=True):
 st.markdown("<h1 style='text-align: center; color: #1F2937;'>🎬 AI Video Viral</h1>", unsafe_allow_html=True)
 st.markdown(
     "<p style='text-align: center; color: #4B5563; font-size: 16px;'>"
-    "Hệ thống tự động hóa 100% đa ngành hàng: Quét biến thể Hot 🔥 & Lượt bán cao, đồng bộ bối cảnh theo kịch bản thoại, "
-    "khóa đồng nhất trang phục, giọng đọc Hà Nội (32-40 chữ/cảnh 8s) và xuất Prompt Ảnh & Video Veo 3."
+    "Hệ thống tự động hóa 100% đa ngành hàng: Chỉ trích xuất sản phẩm & biến thể Hot 🔥/Lượt bán từ ảnh gốc, "
+    "còn nhân vật & bối cảnh được AI tự sáng tạo thông minh hoàn toàn mới khớp theo kịch bản thoại."
     "</p>",
     unsafe_allow_html=True,
 )
@@ -337,7 +337,7 @@ if not st.session_state.analysis_col1:
         "Tải lên ảnh chụp màn hình sản phẩm (có lượt bán, icon Hot 🔥, phân loại, thông số kỹ thuật, hướng dẫn sử dụng...)",
         type=["jpg", "png", "jpeg"],
         accept_multiple_files=True,
-        help="Chọn nhiều ảnh để AI quét chính xác lượt bán, biến thể Hot và hiểu rõ cơ chế hoạt động của sản phẩm.",
+        help="Chọn nhiều ảnh để AI quét chính xác lượt bán, biến thể Hot và hiểu rõ sản phẩm.",
     )
 
     if product_images:
@@ -356,7 +356,7 @@ if not st.session_state.analysis_col1:
     col_b1, col_b2, col_b3 = st.columns([1, 2, 1])
     with col_b2:
         analyze_btn = st.button(
-            "🚀 Phân Tích Chuyên Sâu & Tạo Kịch Bản Đa Ngành Hàng",
+            "🚀 Phân Tích Sản Phẩm & Tạo Kịch Bản Sáng Tạo",
             type="primary",
             use_container_width=True,
         )
@@ -365,7 +365,7 @@ if not st.session_state.analysis_col1:
         if not product_images:
             st.error("⚠️ Vui lòng tải lên ít nhất một ảnh sản phẩm!")
         else:
-            with st.spinner("🤖 AI (gemini-3.8-flash) đang quét lượt bán, biến thể Hot 🔥, phân tích cơ chế hoạt động và viết kịch bản..."):
+            with st.spinner("🤖 AI (gemini-3.8-flash) đang quét sản phẩm, biến thể Hot 🔥, phân tích cơ chế và viết kịch bản..."):
                 try:
                     configure_genai()
                     model = genai.GenerativeModel(MODEL_NAME)
@@ -378,99 +378,77 @@ if not st.session_state.analysis_col1:
                     )
 
                     prompt_text = f"""
-Bạn là Giám đốc Sản xuất Video Quảng cáo AI chuyên nghiệp cho video ngắn dựng sẵn (Reels, TikTok - KHÔNG LIVESTREAM), am hiểu 100% các ngành hàng (Thời trang, Gia dụng, Điện tử, Mỹ phẩm, Sức khỏe, Thực phẩm, Phụ kiện, Mẹ & Bé...).
-Hãy phân tích cực kỳ kỹ lưỡng tất cả các hình ảnh sản phẩm được tải lên.
+Bạn là Giám đốc Sản xuất Video Quảng cáo AI chuyên nghiệp cho video ngắn dựng sẵn (Reels, TikTok - KHÔNG LIVESTREAM), am hiểu 100% các ngành hàng.
+Hãy phân tích các hình ảnh sản phẩm được tải lên.
 {notes_instruction}
 
-1. QUY TẮC BẮT BUỘC VỀ QUÉT LƯỢT BÁN & BIẾN THỂ BÁN CHẠY NHẤT (HERO VARIANT) + ĐỒNG NHẤT TRANG PHỤC:
-- **Quét dữ liệu bán chạy toàn diện:** Bạn PHẢI đọc kỹ từng con chữ và biểu tượng trên tất cả ảnh chụp màn hình:
-  + Tìm con số **Lượt bán** (Ví dụ: "Đã bán 1.2k", "Đã bán 5.4k", thanh tiến trình "Đang bán chạy", số lượng đánh giá từng phân loại).
-  + Tìm các biểu tượng/nhãn như icon ngọn lửa 🔥, chữ "Hot", "Bán chạy", "Best Seller".
-- **Chọn biến thể chủ lực (Hero Variant):** Biến thể/màu sắc/phân loại nào có **lượt bán cao nhất** hoặc có gắn **icon 🔥 / chữ Hot** (Ví dụ: "Đầm ĐEN-34D" có icon 🔥 Hot) BẮT BUỘC phải được chọn làm sản phẩm chủ lực xuyên suốt toàn bộ dự án (trừ khi Ghi chú người dùng yêu cầu khác).
-- **KHÓA ĐỒNG NHẤT TRANG PHỤC 100% (MASTER OUTFIT LOCK):** Thiết lập cố định 100% ngoại hình KOC và bộ trang phục từ đầu đến cuối (quần, áo, váy, áo trong, áo khoác ngoài, kiểu tóc, giày dép, phụ kiện). Tất cả các phân cảnh BẮT BUỘC giữ nguyên bộ trang phục này, tuyệt đối không đổi quần áo hay giày dép giữa các cảnh.
+1. QUY TẮC BẮT BUỘC VỀ SẢN PHẨM & BIẾN THỂ BÁN CHẠY NHẤT (HERO VARIANT):
+- **Chỉ lấy sản phẩm từ ảnh:** Đọc kỹ thông tin sản phẩm, chất liệu, tính năng trên ảnh. 
+- **Quét lượt bán & Biến thể Hot:** Tìm con số lượt bán (ví dụ: "Đã bán 1.2k") hoặc icon ngọn lửa 🔥 / chữ "Hot". Biến thể nào có doanh số cao nhất hoặc gắn nhãn Hot phải được chọn làm sản phẩm chủ lực (Hero Variant).
+- **Tuyệt đối KHÔNG lấy nhân vật hay bối cảnh cũ từ ảnh chụp màn hình gốc:** Nhân vật KOC và bối cảnh trong các phân cảnh phía dưới phải được bạn **tự động sáng tạo mới hoàn toàn**, hiện đại, chuyên nghiệp, phù hợp với hành vi người mua và khớp hoàn toàn với câu thoại của từng cảnh.
 
-2. PHÂN TÍCH KỸ CHỨC NĂNG, CẤU TẠO & CƠ CHẾ HOẠT ĐỘNG THỰC TẾ CỦA SẢN PHẨM (FUNCTIONAL & PHYSICS LOCK - ĐA NGÀNH HÀNG):
-- Tự động nhận diện đúng ngành hàng để mô tả chính xác tuyệt đối **cách thức hoạt động và thao tác sử dụng ngoài đời thực**.
-- **Tuyệt đối không bịa đặt chức năng hoặc mô tả thao tác vật lý sai lệch** với cấu tạo thật của sản phẩm trên ảnh.
+2. CƠ CHẾ VẬT LÝ & HOẠT ĐỘNG SẢN PHẨM (PHYSICS & FUNCTIONAL LOCK):
+- Mô tả chính xác thao tác nhân vật tương tác hoặc vận hành sản phẩm đúng thực tế vật lý ngoài đời (cách cầm, cách bấm nút, cách kéo khóa, độ co giãn...). Không bịa đặt chức năng sai lệch.
 
-3. QUY TẮC 3 KHÔNG TUYỆT ĐỐI VỀ HÌNH ẢNH & ÂM THANH:
-- CẤM dùng từ ngữ livestream ("mọi người ơi", "giỏ hàng phiên live", "vào phiên live", "chốt đơn trên live").
+3. QUY TẮC 3 KHÔNG VỀ HÌNH ẢNH & ÂM THANH:
+- CẤM dùng từ ngữ livestream ("mọi người ơi", "giỏ hàng phiên live", "vào phiên live").
 - CẤM hiển thị 3 câu hook riêng lẻ.
-- **TUYỆT ĐỐI KHÔNG TEXT (NO TEXT OVERLAY), KHÔNG LOGO, KHÔNG NHẠC NỀN (NO BACKGROUND MUSIC)** trong toàn bộ mô tả phân cảnh, ảnh và video. Chỉ có giọng nói trực tiếp của nhân vật và âm thanh hiệu ứng vật lý thực tế của sản phẩm (SFX).
+- **TUYỆT ĐỐI KHÔNG TEXT (NO TEXT OVERLAY), KHÔNG LOGO, KHÔNG NHẠC NỀN (NO BACKGROUND MUSIC)** trong toàn bộ mô tả phân cảnh, ảnh và video. Chỉ có giọng nói trực tiếp của nhân vật và âm thanh hiệu ứng thực tế (SFX).
 
 4. QUY TRÌNH SÁNG TẠO KỊCH BẢN CHUẨN XÁC:
-- **Bước 1:** Ở đầu mỗi kịch bản, viết **Kịch bản Lời thoại Voiceover Tổng thể** liền mạch cho toàn bộ video (giọng Hà Nội tự nhiên, cuốn hút).
-- **Bước 2:** Chia lời thoại tổng thể đó thành các **PHÂN CẢNH 8 GIÂY**.
-- **Giới hạn chữ nghiêm ngặt:** Mỗi phân cảnh 8 giây **CHỈ ĐƯỢC CHỨA TỪ 32 ĐẾN TỐI ĐA 40 CHỮ** trong phần lời thoại để nhân vật nói vừa vặn, rõ chữ.
-- **Linh hoạt số lượng phân cảnh:** Nếu kịch bản dài, hãy **tự động chia thành 4, 5 hoặc 6 phân cảnh** sao cho mỗi phân cảnh luôn giữ đúng chuẩn 32-40 chữ.
-- **Cấu trúc hiển thị mỗi phân cảnh:** Dòng trên là `*Hình ảnh:*` (mô tả góc máy, thao tác sử dụng đúng cơ chế hoạt động và **phải khớp tuyệt đối với ngữ cảnh câu thoại trong cảnh đó**), dòng dưới là `*Lời thoại phân cảnh:*` (câu thoại 32-40 chữ của cảnh đó).
+- **Bước 1:** Viết **Kịch bản Lời thoại Voiceover Tổng thể** liền mạch (giọng Hà Nội tự nhiên).
+- **Bước 2:** Chia thành các **PHÂN CẢNH 8 GIÂY**, mỗi phân cảnh **chỉ chứa từ 32 đến 40 chữ**.
+- **Linh hoạt số lượng phân cảnh:** Nếu dài, tự động chia thành 4, 5 hoặc 6 phân cảnh.
+- **Cấu trúc mỗi phân cảnh:** Dòng trên là `*Hình ảnh:*` (mô tả nhân vật tự sáng tạo, bối cảnh tự sáng tạo khớp ý nghĩa câu thoại, thao tác chuẩn sản phẩm), dòng dưới là `*Lời thoại phân cảnh:*` (32-40 chữ).
 
 Dòng đầu tiên của câu trả lời PHẢI ghi chính xác: Tên sản phẩm: [Tên ngắn gọn của sản phẩm]
 
-TRẢ VỀ KẾT QUẢ ĐÚNG THEO CÁC THẺ PHÂN TÁCH SAU (KHÔNG THÊM BẤT KỲ KÝ TỰ RÁC NÀO):
+TRẢ VỀ KẾT QUẢ ĐÚNG THEO CÁC THẺ PHÂN TÁCH SAU:
 ---SPLIT_COL1_START---
-### 📌 Cột Trái: Phân Tích Lượt Bán, Biến Thể Hot 🔥 & Khóa Trang Phục
-- **1. Ngành hàng, Lượt bán & Chân dung Khách hàng:**
-  - *Ngành hàng & Dữ liệu lượt bán quét được:* [Ghi rõ tổng lượt bán, đánh giá hoặc chỉ số bán chạy đọc được từ ảnh]
-  - *Chân dung khách hàng & Nỗi đau trọng tâm:* [Mô tả chi tiết]
-- **2. Biến Thể Chủ Lực (Hero Variant Hot 🔥) & Khóa Đồng Nhất Trang Phục (Master Outfit Lock):**
-  - *Biến thể bán chạy nhất được chọn:* [Ghi rõ tên/màu biến thể có lượt bán cao nhất hoặc có icon Hot 🔥]
-  - *Ngoại hình KOC cố định:* [Độ tuổi, gương mặt, làn da, kiểu tóc cố định]
-  - *Trang phục khóa chặt 100% (Áo/Váy/Quần/Áo khoác):* [Mô tả chi tiết từng món đồ trên người nhân vật]
-  - *Giày dép & Phụ kiện khóa chặt 100%:* [Mô tả chi tiết giày/dép, phụ kiện cố định xuyên suốt mọi phân cảnh]
+### 📌 Cột Trái: Sản Phẩm Chủ Lực, Lượt Bán & Chân Dung Khách Hàng
+- **1. Dữ liệu Lượt bán & Chân dung Khách hàng:**
+  - *Sản phẩm & Lượt bán quét được:* [Tên sản phẩm và tổng lượt bán/đánh giá]
+  - *Nỗi đau khách hàng:* [Mô tả chi tiết]
+- **2. Biến Thể Chủ Lực (Hero Variant Hot 🔥):**
+  - *Biến thể chọn làm trọng tâm:* [Tên/màu biến thể bán chạy nhất]
+  - *Đặc tính kỹ thuật sản phẩm:* [Chất liệu, điểm nổi bật]
 ---SPLIT_COL1_END---
 
 ---SPLIT_COL2_START---
-### 🎨 Cột Phải: Giải Phẫu Cơ Chế Hoạt Động & Bối Cảnh
-- **3. Giải phẫu Cấu tạo 3D & Cơ chế Hoạt động Thực tế (Functional & Physics Lock):**
-  - *Kích thước, Chất liệu & Cấu tạo 3D:* [Mô tả tỉ lệ thật, bề mặt chất liệu, các bộ phận chi tiết]
-  - *Cách thức hoạt động & Thao tác sử dụng chuẩn:* [Mô tả chính xác cách tay nhân vật tương tác, vận hành hoặc trình diễn tính năng sản phẩm đúng vật lý thực tế]
-- **4. Chuẩn Bối Cảnh Cố Định & Mức Giá Ưu Đãi:**
-  - *Bối cảnh & Ánh sáng đồng nhất:* [Không gian phù hợp với ngành hàng sản phẩm]
-  - *Thông tin Giá & Ưu đãi:* [Mức giá và ưu đãi đọc được từ ảnh]
+### 🎨 Cột Phải: Giải Phẫu Cấu Tạo & Cơ Chế Hoạt Động
+- **3. Giải phẫu Cấu tạo & Cơ chế Vật lý:**
+  - *Cấu tạo 3D & Kích thước:* [Thông tin chuẩn]
+  - *Thao tác vận hành thực tế:* [Cách sử dụng sản phẩm đúng cơ chế]
+- **4. Thông Tin Giá & Ưu Đãi:**
+  - *Mức giá hiển thị:* [Giá gốc và giá sale]
 ---SPLIT_COL2_END---
 
 ---SPLIT_SCENE_1---
 ### 🎬 Kịch bản 1: Góc Review Thực Tế & Trình Diễn Tính Năng
-- **Kịch bản Lời thoại Voiceover Tổng thể (Giọng Hà Nội chuẩn):** "[Viết toàn bộ lời thoại liền mạch của cả video tại đây]"
+- **Kịch bản Lời thoại Voiceover Tổng thể (Giọng Hà Nội chuẩn):** "[Viết toàn bộ lời thoại liền mạch]"
 - **Phân cảnh 1 (8 giây):**
-  - *Hình ảnh:* [Mô tả chi tiết góc máy, thao tác sản phẩm đúng cơ chế hoạt động, **bối cảnh khớp tuyệt đối với ý nghĩa câu thoại cảnh này**, giữ nguyên 100% trang phục đã khóa, KHÔNG TEXT, KHÔNG LOGO]
-  - *Lời thoại phân cảnh (32-40 chữ):* "[Câu thoại của phân cảnh 1]"
+  - *Hình ảnh:* [AI tự sáng tạo nhân vật KOC hiện đại, bối cảnh khớp hoàn toàn với câu thoại cảnh này, thao tác chuẩn sản phẩm, KHÔNG TEXT, KHÔNG LOGO]
+  - *Lời thoại phân cảnh (32-40 chữ):* "[Câu thoại cảnh 1]"
 - **Phân cảnh 2 (8 giây):**
-  - *Hình ảnh:* [Mô tả chi tiết góc máy, thao tác chứng minh công năng/chất liệu sản phẩm, **bối cảnh khớp tuyệt đối với ý nghĩa câu thoại cảnh này**, giữ nguyên 100% trang phục đã khóa, KHÔNG TEXT, KHÔNG LOGO]
-  - *Lời thoại phân cảnh (32-40 chữ):* "[Câu thoại của phân cảnh 2]"
-- **Phân cảnh 3 (8 giây):**
-  - *Hình ảnh:* [Mô tả chi tiết góc máy, **bối cảnh khớp tuyệt đối với ý nghĩa câu thoại cảnh này**, giữ nguyên 100% trang phục đã khóa, KHÔNG TEXT, KHÔNG LOGO]
-  - *Lời thoại phân cảnh (32-40 chữ):* "[Câu thoại của phân cảnh 3]"
-(Tiếp tục thêm Phân cảnh 4, Phân cảnh 5... nếu lời thoại tổng thể còn nội dung)
+  - *Hình ảnh:* [AI tự sáng tạo nhân vật & bối cảnh khớp câu thoại, KHÔNG TEXT, KHÔNG LOGO]
+  - *Lời thoại phân cảnh (32-40 chữ):* "[Câu thoại cảnh 2]"
+(Tiếp tục Phân cảnh 3, 4...)
 
 ---SPLIT_SCENE_2---
 ### 🎬 Kịch bản 2: Góc Giải Quyết Nỗi Đau & Tình Huống Thực Tế
-- **Kịch bản Lời thoại Voiceover Tổng thể (Giọng Hà Nội chuẩn):** "[Viết toàn bộ lời thoại liền mạch của cả video tại đây]"
+- **Kịch bản Lời thoại Voiceover Tổng thể (Giọng Hà Nội chuẩn):** "[Viết toàn bộ lời thoại liền mạch]"
 - **Phân cảnh 1 (8 giây):**
-  - *Hình ảnh:* [Mô tả chi tiết cảnh quay đúng cơ chế sản phẩm và **bối cảnh khớp với câu thoại**, giữ nguyên trang phục đã khóa, KHÔNG TEXT, KHÔNG LOGO]
-  - *Lời thoại phân cảnh (32-40 chữ):* "[Câu thoại của phân cảnh 1]"
-- **Phân cảnh 2 (8 giây):**
-  - *Hình ảnh:* [...]
-  - *Lời thoại phân cảnh (32-40 chữ):* "[...]"
-- **Phân cảnh 3 (8 giây):**
-  - *Hình ảnh:* [...]
-  - *Lời thoại phân cảnh (32-40 chữ):* "[...]"
-(Tiếp tục thêm Phân cảnh 4, 5... nếu cần)
+  - *Hình ảnh:* [AI tự sáng tạo nhân vật & bối cảnh khớp câu thoại, KHÔNG TEXT, KHÔNG LOGO]
+  - *Lời thoại phân cảnh (32-40 chữ):* "[Câu thoại cảnh 1]"
+(Tiếp tục Phân cảnh 2, 3...)
 
 ---SPLIT_SCENE_3---
 ### 🎬 Kịch bản 3: Góc Kiểm Chứng Chất Lượng & Ưu Đãi Sốc
-- **Kịch bản Lời thoại Voiceover Tổng thể (Giọng Hà Nội chuẩn):** "[Viết toàn bộ lời thoại liền mạch của cả video tại đây]"
+- **Kịch bản Lời thoại Voiceover Tổng thể (Giọng Hà Nội chuẩn):** "[Viết toàn bộ lời thoại liền mạch]"
 - **Phân cảnh 1 (8 giây):**
-  - *Hình ảnh:* [Mô tả chi tiết cảnh quay đúng cơ chế sản phẩm và **bối cảnh khớp với câu thoại**, giữ nguyên trang phục đã khóa, KHÔNG TEXT, KHÔNG LOGO]
-  - *Lời thoại phân cảnh (32-40 chữ):* "[Câu thoại của phân cảnh 1]"
-- **Phân cảnh 2 (8 giây):**
-  - *Hình ảnh:* [...]
-  - *Lời thoại phân cảnh (32-40 chữ):* "[...]"
-- **Phân cảnh 3 (8 giây):**
-  - *Hình ảnh:* [...]
-  - *Lời thoại phân cảnh (32-40 chữ):* "[...]"
-(Tiếp tục thêm Phân cảnh 4, 5... nếu cần)
+  - *Hình ảnh:* [AI tự sáng tạo nhân vật & bối cảnh khớp câu thoại, KHÔNG TEXT, KHÔNG LOGO]
+  - *Lời thoại phân cảnh (32-40 chữ):* "[Câu thoại cảnh 1]"
+(Tiếp tục Phân cảnh 2, 3...)
 """
                     contents.append(prompt_text)
 
@@ -504,7 +482,7 @@ TRẢ VỀ KẾT QUẢ ĐÚNG THEO CÁC THẺ PHÂN TÁCH SAU (KHÔNG THÊM BẤ
                         st.session_state.analysis_col1 + "\n\n" + st.session_state.analysis_col2,
                         full_text,
                     )
-                    st.success("✅ Phân tích thành công theo Lượt bán & Biến thể Hot 🔥, đã lưu lên Supabase!")
+                    st.success("✅ Phân tích thành công, đã lưu lên Supabase!")
                     st.rerun()
                 except Exception as e:
                     st.error(f"Lỗi khi gọi API: {e}")
@@ -513,7 +491,7 @@ TRẢ VỀ KẾT QUẢ ĐÚNG THEO CÁC THẺ PHÂN TÁCH SAU (KHÔNG THÊM BẤ
 if st.session_state.analysis_col1:
     st.markdown("<br>", unsafe_allow_html=True)
     st.markdown(
-        "<h2 style='text-align: center; color: #4F46E5;'>🔍 Phân Tích Lượt Bán, Cơ Chế Hoạt Động & Khóa Trang Phục</h2>",
+        "<h2 style='text-align: center; color: #4F46E5;'>🔍 Phân Tích Sản Phẩm, Biến Thể Hot & Cơ Chế Hoạt Động</h2>",
         unsafe_allow_html=True,
     )
     st.markdown("<br>", unsafe_allow_html=True)
@@ -526,7 +504,7 @@ if st.session_state.analysis_col1:
 
     st.markdown("<br><hr><br>", unsafe_allow_html=True)
     st.markdown(
-        "<h2 style='text-align: center; color: #4F46E5;'>🎬 Kịch Bản Quảng Cáo & Xuất Prompt Ảnh / Video Veo 3</h2>",
+        "<h2 style='text-align: center; color: #4F46E5;'>🎬 Kịch Bản Quảng Cáo & Xuất Prompt Sáng Tạo Ảnh / Video Veo 3</h2>",
         unsafe_allow_html=True,
     )
     st.markdown("<br>", unsafe_allow_html=True)
@@ -537,38 +515,37 @@ if st.session_state.analysis_col1:
         st.markdown(script_content)
 
         if st.button(
-            f"👉 Xuất Bộ Prompt Ảnh & Video Veo 3 cho {script_title} (Đồng Bộ Bối Cảnh & Cơ Chế Sản Phẩm)",
+            f"👉 Xuất Bộ Prompt Ảnh & Video Veo 3 cho {script_title} (Nhân Vật & Bối Cảnh Tự Sáng Tạo Khớp Thoại)",
             key=f"btn_{state_key}",
             type="primary",
             use_container_width=True,
         ):
-            with st.spinner(f"🤖 Đang tạo bộ Prompt Ảnh & Video Veo 3 (Khóa trang phục, đồng bộ bối cảnh theo câu thoại & thoại) cho {script_title}..."):
+            with st.spinner(f"🤖 Đang tạo bộ Prompt Ảnh & Video Veo 3 (Sáng tạo nhân vật & bối cảnh linh hoạt theo câu thoại) cho {script_title}..."):
                 try:
                     configure_genai()
                     model = genai.GenerativeModel(MODEL_NAME)
 
                     master_context = f"{st.session_state.analysis_col1}\n{st.session_state.analysis_col2}"
                     prompt_gen = f"""
-Dựa vào THÔNG TIN KHÓA TRANG PHỤC, BIẾN THỂ HOT, CƠ CHẾ SẢN PHẨM dưới đây:
+Dựa vào THÔNG TIN SẢN PHẨM CHỦ LỰC VÀ BIẾN THỂ HOT dưới đây:
 {master_context}
 
 Và nội dung chi tiết của từng phân cảnh trong {script_title} dưới đây:
 {script_content}
 
-Hãy xuất bộ Prompt tạo Ảnh tĩnh (Midjourney/Flux) và Prompt tạo Video (Veo 3 Pro) cho TẤT CẢ CÁC PHÂN CẢNH có trong kịch bản trên (kịch bản có bao nhiêu cảnh thì phải xuất đủ bấy nhiêu cảnh).
+Hãy xuất bộ Prompt tạo Ảnh tĩnh (Midjourney/Flux) và Prompt tạo Video (Veo 3 Pro) cho TẤT CẢ CÁC PHÂN CẢNH có trong kịch bản trên.
 
-YÊU CẦU NGHIÊM NGẶT VỀ BỐI CẢNH & NỘI DUNG:
-1. **ĐỒNG BỘ BỐI CẢNH THEO KỊCH BẢN THOẠI (CONTEXT & SETTING SYNC):** Trong MỌI câu lệnh `IMG_PROMPT` và `VID_PROMPT`, bối cảnh không gian phải **khớp hoàn toàn 100% với ý nghĩa và câu thoại của phân cảnh đó** (Ví dụ: Nếu cảnh nói về đi ngoài đường nắng, bối cảnh phải là đường phố ngoài trời ban ngày; nếu cảnh nói về mặc ở nhà hoặc phòng thử đồ, bối cảnh phải là không gian trong nhà sang trọng; tuyệt đối không để bối cảnh bị lệch lạc so với câu thoại).
-2. **ĐỒNG NHẤT TRANG PHỤC & NHÂN VẬT 100% (IDENTICAL CHARACTER & OUTFIT):** Ngoại hình nhân vật, kiểu tóc và toàn bộ trang phục (quần, áo, váy, áo khoác, giày dép, phụ kiện) phải giữ nguyên y hệt 100% xuyên suốt mọi phân cảnh.
-3. **ĐÚNG CƠ CHẾ VẬT LÝ & CHỨC NĂNG SẢN PHẨM (ACCURATE PRODUCT MECHANICS & PHYSICS):** Mô tả chính xác thao tác nhân vật tương tác hoặc vận hành sản phẩm đúng thực tế.
-4. **TUYỆT ĐỐI KHÔNG TEXT, KHÔNG LOGO, KHÔNG NHẠC NỀN:** Gắn cụm `no text, no words, no watermark, no logo` ở prompt ảnh, và `no background music, no text overlay, no logo, studio quality audio` ở prompt video.
-5. **NHÂN VẬT TRỰC TIẾP THOẠI TRONG VIDEO (VEO 3 LIP-SYNC DIALOGUE):** Trong `VID_PROMPT`, bắt buộc có chỉ dẫn nhân vật nói trực tiếp câu thoại tiếng Việt của phân cảnh đó với giọng nữ Hà Nội tự nhiên, khớp khẩu hình miệng (Ví dụ: `The Vietnamese female KOC speaks naturally in a clear Hanoi accent with accurate lip-sync, saying: "[Chèn nguyên văn câu thoại tiếng Việt của phân cảnh đó]"`), đi kèm âm thanh vật lý thực tế của sản phẩm (realistic product SFX).
+YÊU CẦU NGHIÊM NGẶT VỀ NHÂN VẬT & BỐI CẢNH SÁNG TẠO:
+1. **CHỈ LẤY SẢN PHẨM LÀM TRỌNG TÂM:** Không sao chép nhân vật hay bối cảnh cũ từ ảnh chụp màn hình gốc. Hãy **tự do sáng tạo nhân vật KOC hiện đại, chuyên nghiệp và thiết kế bối cảnh không gian hoàn toàn mới, sống động, khớp tuyệt đối 100% với ý nghĩa câu thoại** của từng phân cảnh.
+2. **ĐÚNG CƠ CHẾ VẬT LÝ & CHỨC NĂNG SẢN PHẨM:** Mô tả chính xác thao tác nhân vật tương tác vận hành sản phẩm đúng thực tế vật lý.
+3. **TUYỆT ĐỐI KHÔNG TEXT, KHÔNG LOGO, KHÔNG NHẠC NỀN:** Gắn cụm `no text, no words, no watermark, no logo` ở prompt ảnh, và `no background music, no text overlay, no logo, studio quality audio` ở prompt video.
+4. **NHÂN VẬT TRỰC TIẾP THOẠI TRONG VIDEO (VEO 3 LIP-SYNC DIALOGUE):** Trong `VID_PROMPT`, bắt buộc có chỉ dẫn nhân vật nói trực tiếp câu thoại tiếng Việt của phân cảnh đó với giọng nữ Hà Nội tự nhiên, khớp khẩu hình miệng (Ví dụ: `The Vietnamese female KOC speaks naturally in a clear Hanoi accent with accurate lip-sync, saying: "[Chèn nguyên văn câu thoại tiếng Việt của phân cảnh đó]"`), đi kèm âm thanh thực tế của sản phẩm (realistic product SFX).
 
 BẮT BUỘC TRẢ VỀ ĐÚNG ĐỊNH DẠNG SAU CHO TỪNG PHÂN CẢNH:
 ===SCENE_SPLIT===
 SCENE_NUM: [Số thứ tự cảnh, ví dụ: 1]
-IMG_PROMPT: [IDENTICAL SETTING & OUTFIT]: Vertical 9:16 photorealistic medium shot, [Mô tả chi tiết bối cảnh KHỚP TUYỆT ĐỐI VỚI NỘI DUNG THOẠI + ngoại hình KOC + toàn bộ trang phục váy/áo/quần/giày dép cố định + cấu tạo 3D sản phẩm + hành động tương tác đúng chức năng], 8k resolution, photorealistic, no text, no logo --ar 9:16
-VID_PROMPT: [PRODUCT-CENTRIC CAMERA & IDENTICAL OUTFIT]: Vertical 9:16 stable cinematic shot, [Mô tả chi tiết bối cảnh KHỚP TUYỆT ĐỐI VỚI NỘI DUNG THOẠI + ngoại hình KOC + toàn bộ trang phục cố định + chuyển động sử dụng/trình diễn sản phẩm đúng cơ chế vật lý mượt mà]. The character speaks directly with natural facial expressions and accurate lip-sync in a clear Vietnamese Hanoi female voice, saying: "[Nguyên văn câu lời thoại tiếng Việt của phân cảnh này]". Studio quality voice audio, realistic product interaction sound effects, no background music, no text, no logo, anti-stutter.
+IMG_PROMPT: [DYNAMIC SETTING & CHARACTER]: Vertical 9:16 photorealistic medium shot, [Mô tả nhân vật KOC do AI tự sáng tạo + BỐI CẢNH MỚI KHỚP TUYỆT ĐỐI VỚI NỘI DUNG THOẠI + sản phẩm biến thể Hot + hành động tương tác đúng chức năng], 8k resolution, photorealistic, no text, no logo --ar 9:16
+VID_PROMPT: [PRODUCT-CENTRIC CAMERA & DYNAMIC SCENE]: Vertical 9:16 stable cinematic shot, [Mô tả nhân vật KOC + Bối cảnh mới khớp thoại + chuyển động sử dụng/trình diễn sản phẩm đúng cơ chế vật lý mượt mà]. The character speaks directly with natural facial expressions and accurate lip-sync in a clear Vietnamese Hanoi female voice, saying: "[Nguyên văn câu lời thoại tiếng Việt của phân cảnh này]". Studio quality voice audio, realistic product interaction sound effects, no background music, no text, no logo, anti-stutter.
 """
                     res = model.generate_content(prompt_gen)
                     st.session_state[state_key] = res.text
@@ -641,7 +618,7 @@ VID_PROMPT: [PRODUCT-CENTRIC CAMERA & IDENTICAL OUTFIT]: Vertical 9:16 stable ci
     )
 
     if st.button("🚀 Gọi thêm 3 Kịch bản mới theo yêu cầu", type="primary", use_container_width=True):
-        with st.spinner("🤖 AI đang sáng tạo thêm 3 kịch bản mới bám sát cơ chế sản phẩm & trang phục..."):
+        with st.spinner("🤖 AI đang sáng tạo thêm 3 kịch bản mới bám sát sản phẩm & tự do sáng tạo bối cảnh linh hoạt..."):
             try:
                 configure_genai()
                 model = genai.GenerativeModel(MODEL_NAME)
@@ -652,18 +629,17 @@ VID_PROMPT: [PRODUCT-CENTRIC CAMERA & IDENTICAL OUTFIT]: Vertical 9:16 stable ci
                 )
                 master_context = f"{st.session_state.analysis_col1}\n{st.session_state.analysis_col2}"
                 extra_prompt = f"""
-Dựa trên BẢNG PHÂN TÍCH SẢN PHẨM, CƠ CHẾ HOẠT ĐỘNG & KHÓA ĐỒNG NHẤT TRANG PHỤC GỐC dưới đây:
+Dựa trên BẢNG PHÂN TÍCH SẢN PHẨM & BIẾN THỂ HOT GỐC dưới đây:
 {master_context}
 {extra_note_instruction}
 
-Hãy viết THÊM 3 kịch bản quảng cáo mới hoàn toàn ở 3 góc tiếp cận mới (So sánh chất lượng, Trải nghiệm thực tế, Chuyên gia phân tích).
+Hãy viết THÊM 3 kịch bản quảng cáo mới hoàn toàn ở 3 góc tiếp cận mới.
 TUÂN THỦ NGHIÊM NGẶT:
-1. Khai thác đúng biến thể bán chạy nhất (Hero Variant) và GIỮ NGUYÊN 100% BỘ TRANG PHỤC/GIÀY DÉP ĐÃ KHÓA xuyên suốt mọi phân cảnh.
-2. Mô tả hình ảnh nhân vật tương tác và sử dụng sản phẩm đúng 100% với chức năng và cơ chế hoạt động vật lý thực tế.
-3. Bối cảnh không gian trong từng phân cảnh phải khớp tuyệt đối với nội dung lời thoại của cảnh đó.
-4. Viết **Kịch bản Lời thoại Voiceover Tổng thể** ở đầu mỗi kịch bản, sau đó chia thành các phân cảnh 8 giây.
-5. Mỗi phân cảnh 8 giây CHỈ CHỨA 32-40 CHỮ. Nếu dài phải tự động chia thành 4, 5 hoặc 6 phân cảnh.
-6. Hoàn toàn KHÔNG TEXT, KHÔNG LOGO, KHÔNG NHẠC NỀN, KHÔNG TỪ NGỮ LIVESTREAM.
+1. Khai thác đúng biến thể bán chạy nhất (Hero Variant) làm trọng tâm.
+2. Sáng tạo nhân vật và bối cảnh linh hoạt, hoàn toàn mới mẻ, khớp tuyệt đối với ngữ cảnh câu thoại trong từng phân cảnh.
+3. Mô tả hình ảnh nhân vật tương tác sản phẩm đúng 100% cơ chế vật lý thực tế.
+4. Viết **Kịch bản Lời thoại Voiceover Tổng thể** ở đầu mỗi kịch bản, sau đó chia thành các phân cảnh 8 giây (32-40 chữ/cảnh).
+5. Hoàn toàn KHÔNG TEXT, KHÔNG LOGO, KHÔNG NHẠC NỀN, KHÔNG TỪ NGỮ LIVESTREAM.
 """
                 res_extra = model.generate_content(extra_prompt)
                 st.session_state.script_3 = (st.session_state.script_3 or "") + "\n\n---\n\n" + clean_script_text(res_extra.text)
