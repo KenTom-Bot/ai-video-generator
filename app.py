@@ -310,9 +310,9 @@ if not st.session_state.product_analysis:
                     - CẤM hiển thị phần 3 câu hook giữ chân người xem.
                     - BẮT BUỘC khóa chặt vào biến thể bán chạy nhất (Hero Variant) đã xác định xuyên suốt các kịch bản.
                     
-                    YÊU CẦU ĐẶC BIỆT VỀ THỜI LƯỢNG PHÂN CẢNH:
-                    - Mỗi kịch bản bao gồm các phân cảnh chuẩn, mỗi phân cảnh có thời lượng cố định là **8 giây** (tổng thể video chạy mượt mà). Không cắt nhỏ chi tiết thời gian phức tạp trong từng phân cảnh.
-                    - Lời thoại thoại (Voiceover) phải có nhịp đọc nhanh dồn dập (32-42 từ/cảnh 8 giây), chuẩn giọng Hà Nội.
+                    QUY TRÌNH SÁNG TẠO KỊCH BẢN (CỰC KỲ QUAN TRỌNG):
+                    1. Viết kịch bản LỜI THOẠI (Voiceover) chuẩn trước với nhịp đọc nhanh dồn dập (32-42 từ cho tổng thể hoặc từng đoạn).
+                    2. Dựa trực tiếp vào lời thoại đó để chia ra các PHÂN CẢNH, mỗi phân cảnh có thời lượng chuẩn cố định là **8 giây**.
                     
                     Dòng đầu tiên PHẢI ghi chính xác tên sản phẩm (Ví dụ: Tên sản phẩm: Đầm body...).
                     
@@ -332,24 +332,24 @@ if not st.session_state.product_analysis:
                     
                     ---SPLIT_SCENE_1---
                     **Kịch bản 1: Góc Review Thực Tế / Xưởng tận gốc**
-                    - **Phân cảnh 1 (8 giây):** [Mô tả trực diện góc máy trung cảnh, nhân vật review chân thực]
-                    - **Phân cảnh 2 (8 giây):** [Mô tả cận cảnh chi tiết chất liệu, thao tác thực tế]
-                    - **Phân cảnh 3 (8 giây):** [Mô tả chốt đơn, mỉm cười kêu gọi]
-                    - **Lời thoại Voiceover tổng hợp (Nhịp đọc nhanh chuẩn Hà Nội):** "[Nội dung lời thoại tốc độ cao]"
+                    - **Kịch bản Lời thoại Voiceover:** [Toàn bộ lời thoại chuẩn nhịp đọc nhanh, giọng Hà Nội]
+                    - **Phân cảnh 1 (8 giây):** [Mô tả hình ảnh/góc máy tương ứng phần đầu lời thoại]
+                    - **Phân cảnh 2 (8 giây):** [Mô tả hình ảnh/góc máy tương ứng phần tiếp theo]
+                    - **Phân cảnh 3 (8 giây):** [Mô tả hình ảnh/góc máy tương ứng phần chốt]
                     
                     ---SPLIT_SCENE_2---
                     **Kịch bản 2: Góc Nỗi đau & Tình huống kịch tính**
-                    - **Phân cảnh 1 (8 giây):** [Mô tả tình huống nỗi đau thực tế của khách hàng]
-                    - **Phân cảnh 2 (8 giây):** [Mô tả giải pháp sản phẩm giải quyết triệt để]
-                    - **Phân cảnh 3 (8 giây):** [Mô tả sự hài lòng tuyệt đối và ưu đãi]
-                    - **Lời thoại Voiceover tổng hợp (Nhịp đọc nhanh chuẩn Hà Nội):** "[Nội dung lời thoại tốc độ cao]"
+                    - **Kịch bản Lời thoại Voiceover:** [Toàn bộ lời thoại chuẩn nhịp đọc nhanh, giọng Hà Nội]
+                    - **Phân cảnh 1 (8 giây):** [Mô tả hình ảnh/góc máy tương ứng phần đầu]
+                    - **Phân cảnh 2 (8 giây):** [Mô tả hình ảnh/góc máy tương ứng phần tiếp theo]
+                    - **Phân cảnh 3 (8 giây):** [Mô tả hình ảnh/góc máy tương ứng phần chốt]
                     
                     ---SPLIT_SCENE_3---
                     **Kịch bản 3: Góc Flash Sale / Săn Sale sốc**
-                    - **Phân cảnh 1 (8 giây):** [Mô tả sự bất ngờ về mức giá hời]
-                    - **Phân cảnh 2 (8 giây):** [Mô tả cận cảnh chất lượng vượt trội so với giá tiền]
-                    - **Phân cảnh 3 (8 giây):** [Mô tả hành động săn sale nhanh chóng]
-                    - **Lời thoại Voiceover tổng hợp (Nhịp đọc nhanh chuẩn Hà Nội):** "[Nội dung lời thoại tốc độ cao]"
+                    - **Kịch bản Lời thoại Voiceover:** [Toàn bộ lời thoại chuẩn nhịp đọc nhanh, giọng Hà Nội]
+                    - **Phân cảnh 1 (8 giây):** [Mô tả hình ảnh/góc máy tương ứng phần đầu]
+                    - **Phân cảnh 2 (8 giây):** [Mô tả hình ảnh/góc máy tương ứng phần tiếp theo]
+                    - **Phân cảnh 3 (8 giây):** [Mô tả hình ảnh/góc máy tương ứng phần chốt]
                     """
           contents.append(prompt_text)
 
@@ -469,7 +469,7 @@ if st.session_state.product_analysis:
           genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
         model = genai.GenerativeModel("gemini-3.8-flash")
         res_v = model.generate_content(
-            f"Dựa vào kịch bản 1 sau, hãy xuất Prompt Veo 3 đồng bộ tuyệt đối theo các phân cảnh 8 giây:\n{st.session_state.script_1}"
+            f"Dựa vào kịch bản 1 sau (kịch bản voice và các phân cảnh 8 giây), hãy xuất Prompt Veo 3 đồng bộ tuyệt đối:\n{st.session_state.script_1}"
         )
         st.session_state.veo_prompts = res_v.text
         st.success("✅ Đã xuất Prompt Veo 3 Kịch bản 1 thành công!")
@@ -505,7 +505,7 @@ if st.session_state.product_analysis:
           genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
         model = genai.GenerativeModel("gemini-3.8-flash")
         res_v = model.generate_content(
-            f"Dựa vào kịch bản 2 sau, hãy xuất Prompt Veo 3 đồng bộ tuyệt đối theo các phân cảnh 8 giây:\n{st.session_state.script_2}"
+            f"Dựa vào kịch bản 2 sau (kịch bản voice và các phân cảnh 8 giây), hãy xuất Prompt Veo 3 đồng bộ tuyệt đối:\n{st.session_state.script_2}"
         )
         st.session_state.veo_prompts = res_v.text
         st.success("✅ Đã xuất Prompt Veo 3 Kịch bản 2 thành công!")
@@ -541,7 +541,7 @@ if st.session_state.product_analysis:
           genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
         model = genai.GenerativeModel("gemini-3.8-flash")
         res_v = model.generate_content(
-            f"Dựa vào kịch bản 3 sau, hãy xuất Prompt Veo 3 đồng bộ tuyệt đối theo các phân cảnh 8 giây:\n{st.session_state.script_3}"
+            f"Dựa vào kịch bản 3 sau (kịch bản voice và các phân cảnh 8 giây), hãy xuất Prompt Veo 3 đồng bộ tuyệt đối:\n{st.session_state.script_3}"
         )
         st.session_state.veo_prompts = res_v.text
         st.success("✅ Đã xuất Prompt Veo 3 Kịch bản 3 thành công!")
@@ -578,7 +578,7 @@ if st.session_state.product_analysis:
         extra_prompt = f"""
                 Hãy viết THÊM 3 kịch bản quảng cáo mới hoàn toàn ở 3 góc tiếp cận mới (So sánh chất lượng, Trải nghiệm bất ngờ, Chuyên gia phân tích).
                 {extra_note_instruction}
-                LƯU Ý: Đây là video ngắn dựng sẵn, CẤM tuyệt đối dùng từ ngữ livestream và KHÔNG hiển thị câu hook. BẮT BUỘC tiếp tục bám sát và khai thác đúng biến thể Hot đã xác định. Mỗi phân cảnh chuẩn 8 giây.
+                LƯU Ý: Viết kịch bản voice trước rồi mới chia thành các phân cảnh 8 giây. CẤM tuyệt đối dùng từ ngữ livestream và KHÔNG hiển thị câu hook. BẮT BUỘC tiếp tục bám sát và khai thác đúng biến thể Hot đã xác định.
                 """
         res_extra = model.generate_content(extra_prompt)
         st.session_state.script_3 += "\n\n" + res_extra.text
