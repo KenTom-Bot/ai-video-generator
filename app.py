@@ -201,14 +201,18 @@ else:
       col_p1, col_p2 = st.sidebar.columns([4, 1])
       if col_p1.button(f"📁 {pname[:20]}...", key=f"load_{pid}"):
         st.session_state.current_project_name = pname
-        st.session_state.product_analysis = pinfo
-        # Tách lại dữ liệu khi load dự án cũ
-        parts = pscript.split("===KỊCH BẢN")
-        if len(parts) >= 4:
-          st.session_state.script_1 = "===KỊCH BẢN" + parts[1]
-          st.session_state.script_2 = "===KỊCH BẢN" + parts[2]
-          st.session_state.script_3 = "===KỊCH BẢN" + parts[3]
-        else:
+        try:
+          p_split = pscript.split("---SPLIT_ANALYZE---")
+          st.session_state.product_analysis = (
+              p_split[0] if len(p_split) > 0 else ""
+          )
+          scripts_rest = p_split[1] if len(p_split) > 1 else pscript
+          s_parts = scripts_rest.split("---SPLIT_SCENE_")
+          st.session_state.script_1 = s_parts[1].split("---")[0] if len(s_parts) > 1 else ""
+          st.session_state.script_2 = s_parts[2].split("---")[0] if len(s_parts) > 2 else ""
+          st.session_state.script_3 = s_parts[3].split("---")[0] if len(s_parts) > 3 else ""
+        except Exception:
+          st.session_state.product_analysis = pinfo
           st.session_state.script_1 = pscript
         st.rerun()
       if col_p2.button("❌", key=f"del_{pid}"):
@@ -302,50 +306,68 @@ if not st.session_state.product_analysis:
                     {notes_instruction}
                     
                     QUY TẮC CẤM TUYỆT ĐỐI:
-                    - CẤM dùng từ ngữ livestream ("mọi người ơi", "giỏ hàng phiên live", "giảm theo suất").
+                    - CẤM dùng từ ngữ livestream ("mọi người ơi", "giỏ hàng phiên live", "giảm theo suất", "vào giỏ hàng").
                     - CẤM hiển thị phần 3 câu hook giữ chân người xem.
+                    - BẮT BUỘC khóa chặt vào biến thể bán chạy nhất (Hero Variant) đã xác định xuyên suốt các kịch bản.
                     
-                    YÊU CẦU ĐẶC BIỆT:
-                    - Dòng đầu tiên PHẢI ghi chính xác tên sản phẩm (Ví dụ: Tên sản phẩm: Đầm body...).
+                    YÊU CẦU ĐẶC BIỆT VỀ THỜI LƯỢNG PHÂN CẢNH:
+                    - Mỗi kịch bản bao gồm các phân cảnh chuẩn, mỗi phân cảnh có thời lượng cố định là **8 giây** (tổng thể video chạy mượt mà). Không cắt nhỏ chi tiết thời gian phức tạp trong từng phân cảnh.
+                    - Lời thoại thoại (Voiceover) phải có nhịp đọc nhanh dồn dập (32-42 từ/cảnh 8 giây), chuẩn giọng Hà Nội.
                     
-                    TRẢ VỀ ĐÚNG CẤU TRÚC 2 PHẦN SAU (DÙNG THẺ PHÂN TÁCH CHÍNH XÁC):
-                    ===PHÂN_TÍCH===
+                    Dòng đầu tiên PHẢI ghi chính xác tên sản phẩm (Ví dụ: Tên sản phẩm: Đầm body...).
+                    
+                    TRẢ VỀ KẾT QUẢ ĐÚNG THEO CẤU TRÚC SAU (SỬ DỤNG CHÍNH XÁC CÁC THẺ PHÂN TÁCH):
+                    ---SPLIT_ANALYZE---
                     **1. Chân dung Khách hàng & Đặc tính**
                     [Nội dung phân tích]
+                    
                     **2. KOC Chuẩn Việt, Stylist & Khóa Màu (Hero Variant Hot)**
                     [Nội dung phân tích]
+                    
                     **3. Giải phẫu Sản phẩm & Khóa Hình học 3D**
                     [Nội dung phân tích]
+                    
                     **4. Chuẩn Bối Cảnh & Mức Giá**
                     [Nội dung phân tích]
                     
-                    ===KỊCH BẢN 1===
+                    ---SPLIT_SCENE_1---
                     **Kịch bản 1: Góc Review Thực Tế / Xưởng tận gốc**
-                    [Chi tiết phân cảnh 8 giây, nhịp đọc nhanh 32-42 từ]
+                    - **Phân cảnh 1 (8 giây):** [Mô tả trực diện góc máy trung cảnh, nhân vật review chân thực]
+                    - **Phân cảnh 2 (8 giây):** [Mô tả cận cảnh chi tiết chất liệu, thao tác thực tế]
+                    - **Phân cảnh 3 (8 giây):** [Mô tả chốt đơn, mỉm cười kêu gọi]
+                    - **Lời thoại Voiceover tổng hợp (Nhịp đọc nhanh chuẩn Hà Nội):** "[Nội dung lời thoại tốc độ cao]"
                     
-                    ===KỊCH BẢN 2===
+                    ---SPLIT_SCENE_2---
                     **Kịch bản 2: Góc Nỗi đau & Tình huống kịch tính**
-                    [Chi tiết phân cảnh 8 giây]
+                    - **Phân cảnh 1 (8 giây):** [Mô tả tình huống nỗi đau thực tế của khách hàng]
+                    - **Phân cảnh 2 (8 giây):** [Mô tả giải pháp sản phẩm giải quyết triệt để]
+                    - **Phân cảnh 3 (8 giây):** [Mô tả sự hài lòng tuyệt đối và ưu đãi]
+                    - **Lời thoại Voiceover tổng hợp (Nhịp đọc nhanh chuẩn Hà Nội):** "[Nội dung lời thoại tốc độ cao]"
                     
-                    ===KỊCH BẢN 3===
+                    ---SPLIT_SCENE_3---
                     **Kịch bản 3: Góc Flash Sale / Săn Sale sốc**
-                    [Chi tiết phân cảnh 8 giây]
+                    - **Phân cảnh 1 (8 giây):** [Mô tả sự bất ngờ về mức giá hời]
+                    - **Phân cảnh 2 (8 giây):** [Mô tả cận cảnh chất lượng vượt trội so với giá tiền]
+                    - **Phân cảnh 3 (8 giây):** [Mô tả hành động săn sale nhanh chóng]
+                    - **Lời thoại Voiceover tổng hợp (Nhịp đọc nhanh chuẩn Hà Nội):** "[Nội dung lời thoại tốc độ cao]"
                     """
           contents.append(prompt_text)
 
           response = model.generate_content(contents)
           full_text = response.text
 
-          # Tách thông minh phần phân tích và các kịch bản
           try:
-            p_split = full_text.split("===PHÂN_TÍCH===")
-            analysis_part = p_split[1].split("===KỊCH BẢN")[0] if len(p_split) > 1 else full_text
-            st.session_state.product_analysis = analysis_part
+            p_split = full_text.split("---SPLIT_ANALYZE---")
+            st.session_state.product_analysis = (
+                p_split[1].split("---SPLIT_SCENE_")[0]
+                if len(p_split) > 1
+                else full_text
+            )
 
-            parts = full_text.split("===KỊCH BẢN")
-            st.session_state.script_1 = "===KỊCH BẢN" + parts[1] if len(parts) > 1 else ""
-            st.session_state.script_2 = "===KỊCH BẢN" + parts[2] if len(parts) > 2 else ""
-            st.session_state.script_3 = "===KỊCH BẢN" + parts[3] if len(parts) > 3 else ""
+            s_parts = full_text.split("---SPLIT_SCENE_")
+            st.session_state.script_1 = s_parts[1].split("---")[0] if len(s_parts) > 1 else ""
+            st.session_state.script_2 = s_parts[2].split("---")[0] if len(s_parts) > 2 else ""
+            st.session_state.script_3 = s_parts[3].split("---")[0] if len(s_parts) > 3 else ""
           except Exception:
             st.session_state.product_analysis = full_text
             st.session_state.script_1 = full_text
@@ -387,12 +409,10 @@ if st.session_state.product_analysis:
   )
   st.markdown("<br>", unsafe_allow_html=True)
 
-  # Chia phân tích thành 2 cột 2 bên cân đối, sạch sẽ
   analysis_text = st.session_state.product_analysis
   col_left, col_right = st.columns(2)
 
   mid_idx = len(analysis_text) // 2
-  # Cắt gọn theo đoạn xuống dòng để không bị cụt chữ
   split_idx = analysis_text.find("\n\n", mid_idx)
   if split_idx == -1:
     split_idx = mid_idx
@@ -449,7 +469,7 @@ if st.session_state.product_analysis:
           genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
         model = genai.GenerativeModel("gemini-3.8-flash")
         res_v = model.generate_content(
-            f"Dựa vào kịch bản 1 sau, chia thành N phân cảnh (8 giây/cảnh) và xuất Prompt Veo 3 đồng bộ:\n{st.session_state.script_1}"
+            f"Dựa vào kịch bản 1 sau, hãy xuất Prompt Veo 3 đồng bộ tuyệt đối theo các phân cảnh 8 giây:\n{st.session_state.script_1}"
         )
         st.session_state.veo_prompts = res_v.text
         st.success("✅ Đã xuất Prompt Veo 3 Kịch bản 1 thành công!")
@@ -485,7 +505,7 @@ if st.session_state.product_analysis:
           genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
         model = genai.GenerativeModel("gemini-3.8-flash")
         res_v = model.generate_content(
-            f"Dựa vào kịch bản 2 sau, chia thành N phân cảnh (8 giây/cảnh) và xuất Prompt Veo 3 đồng bộ:\n{st.session_state.script_2}"
+            f"Dựa vào kịch bản 2 sau, hãy xuất Prompt Veo 3 đồng bộ tuyệt đối theo các phân cảnh 8 giây:\n{st.session_state.script_2}"
         )
         st.session_state.veo_prompts = res_v.text
         st.success("✅ Đã xuất Prompt Veo 3 Kịch bản 2 thành công!")
@@ -521,7 +541,7 @@ if st.session_state.product_analysis:
           genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
         model = genai.GenerativeModel("gemini-3.8-flash")
         res_v = model.generate_content(
-            f"Dựa vào kịch bản 3 sau, chia thành N phân cảnh (8 giây/cảnh) và xuất Prompt Veo 3 đồng bộ:\n{st.session_state.script_3}"
+            f"Dựa vào kịch bản 3 sau, hãy xuất Prompt Veo 3 đồng bộ tuyệt đối theo các phân cảnh 8 giây:\n{st.session_state.script_3}"
         )
         st.session_state.veo_prompts = res_v.text
         st.success("✅ Đã xuất Prompt Veo 3 Kịch bản 3 thành công!")
@@ -558,7 +578,7 @@ if st.session_state.product_analysis:
         extra_prompt = f"""
                 Hãy viết THÊM 3 kịch bản quảng cáo mới hoàn toàn ở 3 góc tiếp cận mới (So sánh chất lượng, Trải nghiệm bất ngờ, Chuyên gia phân tích).
                 {extra_note_instruction}
-                LƯU Ý: Đây là video ngắn dựng sẵn, CẤM tuyệt đối dùng từ ngữ livestream và KHÔNG hiển thị câu hook. BẮT BUỘC tiếp tục bám sát và khai thác đúng biến thể Hot đã xác định.
+                LƯU Ý: Đây là video ngắn dựng sẵn, CẤM tuyệt đối dùng từ ngữ livestream và KHÔNG hiển thị câu hook. BẮT BUỘC tiếp tục bám sát và khai thác đúng biến thể Hot đã xác định. Mỗi phân cảnh chuẩn 8 giây.
                 """
         res_extra = model.generate_content(extra_prompt)
         st.session_state.script_3 += "\n\n" + res_extra.text
@@ -566,11 +586,11 @@ if st.session_state.product_analysis:
             st.session_state.current_project_name,
             st.session_state.product_analysis,
             st.session_state.product_analysis
-            + "\n"
+            + "\n---SPLIT_ANALYZE---\n---SPLIT_SCENE_1---\n"
             + st.session_state.script_1
-            + "\n"
+            + "\n---SPLIT_SCENE_2---\n"
             + st.session_state.script_2
-            + "\n"
+            + "\n---SPLIT_SCENE_3---\n"
             + st.session_state.script_3,
         )
         st.success("Đã bổ sung thêm kịch bản mới thành công!")
