@@ -6,12 +6,10 @@ import google.generativeai as genai
 from PIL import Image
 
 # --- 0. CẤU HÌNH HỆ THỐNG & BẢO MẬT ĐĂNG NHẬP ---
-st.set_page_config(
-    page_title="AI Video Script & Prompt Generator", page_icon="🎬", layout="wide"
-)
+st.set_page_config(page_title="AI Video Viral", page_icon="🎬", layout="wide")
 
 # Thiết lập mật khẩu bảo vệ App (Bạn có thể đổi mật khẩu tại đây)
-ADMIN_PASSWORD = "123"  # <-- Đổi mật khẩu của bạn tại đây
+ADMIN_PASSWORD = "123"  # <-- Mật khẩu truy cập app
 
 
 def check_password():
@@ -108,7 +106,7 @@ def get_all_projects():
 
 
 def soft_delete_project(project_id):
-  """Xóa mềm dự án (chuyển trạng thái is_deleted = 1)"""
+  """Xóa mềm dự án"""
   conn = sqlite3.connect(DB_FILE)
   cursor = conn.cursor()
   cursor.execute(
@@ -133,6 +131,7 @@ if "veo_prompts" not in st.session_state:
 # --- 3. THANH ĐIỀU HƯỚNG (SIDEBAR) & QUẢN LÝ DỰ ÁN ---
 st.sidebar.title("🗂️ Quản lý Dự án Vĩnh viễn")
 
+# Nút Tạo dự án mới
 if st.sidebar.button(
     "➕ Tạo Dự Án Mới", type="primary", use_container_width=True
 ):
@@ -146,12 +145,16 @@ if st.sidebar.button(
 
 st.sidebar.divider()
 
-if st.sidebar.button("🚪 Đăng xuất tài khoản", use_container_width=True):
-  st.session_state["password_correct"] = False
-  st.rerun()
+# Ô Tên dự án chuyển sang thanh bên trái
+st.sidebar.subheader("🏷️ Cài đặt Dự án")
+project_title_input = st.sidebar.text_input(
+    "Tên dự án hiện tại", value=st.session_state.current_project_name
+)
+st.session_state.current_project_name = project_title_input
 
 st.sidebar.divider()
 
+# Thanh tìm kiếm dự án cũ trong Database
 search_query = st.sidebar.text_input("🔍 Tìm kiếm dự án cũ", "")
 projects = get_all_projects()
 
@@ -171,112 +174,100 @@ else:
         soft_delete_project(pid)
         st.rerun()
 
+# Đẩy nút Đăng xuất xuống dưới cùng của Sidebar
+st.sidebar.markdown("<br><br><br>", unsafe_allow_html=True)
+st.sidebar.divider()
+if st.sidebar.button("🚪 Đăng xuất tài khoản", use_container_width=True):
+  st.session_state["password_correct"] = False
+  st.rerun()
+
 # --- 4. GIAO DIỆN CHÍNH ---
-st.title("🎬 AI Video Script & Veo 3 Prompt Generator")
+st.title("🎬 AI Video Viral")
 st.markdown(
-    "Hệ thống tự động hóa 100% ngành hàng: Phân tích sản phẩm, khóa đồng bộ"
-    " nhân vật, trang phục, giọng đọc Hà Nội chuẩn và sinh Prompt Veo 3 chuyên"
-    " nghiệp."
+    "Hệ thống tự động hóa 100% ngành hàng: AI tự phân tích ảnh sản phẩm,"
+    " thông tin Shopee, khóa đồng bộ nhân vật, trang phục, giọng đọc Hà Nội"
+    " chuẩn và sinh Prompt Veo 3 chuyên nghiệp."
 )
 
-api_key = st.text_input(
-    "🔑 Nhập Google Gemini API Key của bạn", type="password"
+# Gộp thành 1 ô tải ảnh duy nhất cho cả sản phẩm và thông tin
+product_image = st.file_uploader(
+    "1️⃣ Tải lên Ảnh Sản Phẩm Thật kèm thông tin chi tiết / thông số"
+    " (Shopee/TikTok)",
+    type=["jpg", "png", "jpeg"],
+    help=(
+        "Tải lên ảnh chụp sản phẩm rõ nét kèm thông tin mô tả để Veo 3 tham"
+        " chiếu."
+    ),
 )
 
-col1, col2 = st.columns(2)
-with col1:
-  product_image = st.file_uploader(
-      "1️⃣ Tải lên Ảnh Sản Phẩm Thật", type=["jpg", "png", "jpeg"]
-  )
-with col2:
-  info_image = st.file_uploader(
-      "2️⃣ Tải lên Ảnh Thông Tin/Thông số (Shopee/TikTok)",
-      type=["jpg", "png", "jpeg"],
-  )
-
-if product_image or info_image:
+# Ô xem lại ảnh dạng ẩn (Collapsible)
+if product_image:
   with st.expander("👁️ Xem lại ảnh đã tải lên (Bấm để mở/ẩn)"):
-    sub_c1, sub_c2 = st.columns(2)
-    if product_image:
-      sub_c1.image(
-          product_image, caption="Ảnh sản phẩm", use_container_width=True
-      )
-    if info_image:
-      sub_c2.image(
-          info_image, caption="Ảnh thông tin Shopee", use_container_width=True
-      )
+    st.image(
+        product_image,
+        caption="Ảnh sản phẩm & Thông tin đã tải lên",
+        use_container_width=True,
+    )
 
-col_opt1, col_opt2, col_opt3 = st.columns(3)
-with col_opt1:
-  target_gender = st.selectbox(
-      "👤 Giới tính / Nhân vật",
-      [
-          "Nam chủ xưởng (Cơ khí/Gia dụng nặng)",
-          "Nữ nhân viên kho (Tiện ích/Điện tử)",
-          "Nam/Nữ trẻ (Thời trang/Mỹ phẩm)",
-          "Ông/Bà phúc hậu (Đồ người già)",
-          "Cặp Mẹ & Bé (Đồ trẻ em)",
-      ],
-  )
-with col_opt2:
-  voice_accent = st.selectbox(
-      "🗣️ Giọng đọc chuẩn",
-      [
-          "100% Giọng Hà Nội chuẩn (Nam trung niên hào sảng)",
-          "100% Giọng Hà Nội chuẩn (Nữ nhân viên thân thiện)",
-          "100% Giọng Hà Nội chuẩn (Người cao tuổi uy tín)",
-      ],
-  )
-with col_opt3:
-  project_title_input = st.text_input(
-      "🏷️ Tên dự án", value=st.session_state.current_project_name
-  )
-  st.session_state.current_project_name = project_title_input
+st.info(
+    "💡 **Lưu ý:** Giới tính nhân vật, trang phục và chất giọng Hà Nội chuẩn"
+    " sẽ được AI tự động phân tích và gán khớp tuyệt đối dựa trên đặc tính sản"
+    " phẩm của bạn."
+)
 
 # --- 5. XỬ LÝ PHÂN TÍCH BẰNG GEMINI ---
 if st.button(
     "🚀 Phân Tích Sản Phẩm & Tạo Bộ 3 Kịch Bản Ban Đầu", type="primary"
 ):
-  if not api_key:
-    st.error("Vui lòng nhập Gemini API Key để tiếp tục!")
-  elif not product_image:
-    st.error("Vui lòng tải lên ít nhất ảnh sản phẩm!")
+  if not product_image:
+    st.error("Vui lòng tải lên ảnh sản phẩm thật kèm thông tin!")
   else:
     with st.spinner(
-        "🤖 AI đang phân tích cơ học, chọn biến thể bán chạy và viết kịch bản..."
+        "🤖 AI đang phân tích sản phẩm, tự động chọn nhân vật/giọng đọc và viết"
+        " kịch bản..."
     ):
       try:
-        genai.configure(api_key=api_key)
-        model = genai.GenerativeModel("gemini-1.5-pro-latest")
+        # Tự động lấy API key từ cấu hình hệ thống bí mật của Streamlit Cloud (st.secrets)
+        if "GEMINI_API_KEY" in st.secrets:
+          genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+        else:
+          # Hoặc lấy từ biến môi trường nếu có
+          genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
 
+        model = genai.GenerativeModel("gemini-1.5-pro-latest")
         img_prod = Image.open(product_image)
+
         prompt_text = f"""
-                Hãy phân tích ảnh sản phẩm và ảnh thông tin được cung cấp.
+                Bạn là Giám đốc Sản xuất Video Quảng cáo AI chuyên nghiệp. Hãy phân tích ảnh sản phẩm kèm thông tin được cung cấp.
                 Yêu cầu thực hiện:
-                1. Nhận diện chuẩn tên sản phẩm, chọn biến thể màu sắc chủ đạo (Hero Variant) nếu có nhiều màu.
-                2. Thiết lập 6 Khóa đồng bộ: [CHARACTER_LOCK], [WARDROBE_LOCK], [BACKGROUND_LOCK], [VOICE_LOCK] (chuẩn Hà Nội), [PRODUCT_SCALE_&_COLOR_LOCK], [MECHANICS_&_PHYSICS_LOCK].
-                3. Viết ra ĐẦU TIÊN BỘ 3 KỊCH BẢN THOẠI KHÁC NHAU ở 3 góc tiếp cận:
+                1. Tự động nhận diện chuẩn tên sản phẩm, chọn biến thể màu sắc chủ đạo (Hero Variant) dựa trên dấu hiệu bán chạy/lượt bán (nếu có).
+                2. Tự động quyết định Giới tính/Nhân vật phù hợp nhất với ngành hàng (ví dụ: nam chủ xưởng cho cơ khí, nữ quản lý kho cho tiện ích, mẹ đi kèm bé cho đồ trẻ em, v.v.) và khóa chặt chất giọng Hà Nội chuẩn tương ứng.
+                3. Thiết lập 6 Khóa đồng bộ: [CHARACTER_LOCK], [WARDROBE_LOCK], [BACKGROUND_LOCK], [VOICE_LOCK] (chuẩn Hà Nội), [PRODUCT_SCALE_&_COLOR_LOCK], [MECHANICS_&_PHYSICS_LOCK].
+                4. Viết ra ĐẦU TIÊN BỘ 3 KỊCH BẢN THOẠI KHÁC NHAU ở 3 góc tiếp cận:
                    - Kịch bản 1: Góc Review Thực Tế / Xưởng tận gốc.
                    - Kịch bản 2: Góc Nỗi đau & Tình huống kịch tính.
                    - Kịch bản 3: Góc Flash Sale / Săn Sale sốc.
+                Mỗi kịch bản phải có nhịp độ đọc nhanh dồn dập (32-42 từ/cảnh 8 giây), dùng từ ngữ dân dã, cuốn hút.
                 """
         contents = [img_prod, prompt_text]
-        if info_image:
-          contents.append(Image.open(info_image))
 
         response = model.generate_content(contents)
         st.session_state.generated_scripts = response.text
         st.session_state.product_analysis = "Đã phân tích thành công sản phẩm."
 
+        # Tự động lưu vào Database vĩnh viễn
         save_project_db(
             st.session_state.current_project_name,
             st.session_state.product_analysis,
             st.session_state.generated_scripts,
         )
-        st.success("✅ Phân tích thành công! Đã lưu vào Database.")
+        st.success("✅ Phân tích thành công! Đã lưu vào Database vĩnh viễn.")
         st.rerun()
       except Exception as e:
-        st.error(f"Lỗi khi gọi API: {e}")
+        st.error(
+            f"Lỗi khi gọi API (Hãy kiểm tra lại cấu hình GEMINI_API_KEY trên"
+            f" Streamlit Cloud): {e}"
+        )
 
 # --- 6. HIỂN THỊ KỊCH BẢN & TÍNH NĂNG GỌI THÊM KỊCH BẢN ---
 if st.session_state.generated_scripts:
@@ -292,37 +283,41 @@ if st.session_state.generated_scripts:
 
   col_s1, col_s2 = st.columns(2)
 
+  # Nút Gọi Thêm Kịch Bản (Góc tiếp cận mới / Flash Sale)
   if col_s1.button(
       "➕ Gọi thêm 3 Kịch bản khác (Góc tiếp cận mới & Flash Sale)",
       use_container_width=True,
   ):
-    if not api_key:
-      st.error("Vui lòng nhập API Key!")
-    else:
-      with st.spinner("🤖 AI đang sáng tạo thêm 3 góc tiếp cận mới..."):
-        try:
-          genai.configure(api_key=api_key)
-          model = genai.GenerativeModel("gemini-1.5-pro-latest")
-          extra_prompt = """
-                    Hãy viết THÊM 3 kịch bản quảng cáo mới hoàn toàn cho sản phẩm này ở 3 góc tiếp cận:
-                    1. Góc Flash Sale / Săn Sale sốc cuối tuần.
-                    2. Góc So sánh chất lượng với thị trường.
-                    3. Góc Trải nghiệm thực tế bất ngờ.
-                    """
-          res_extra = model.generate_content(extra_prompt)
-          st.session_state.generated_scripts += (
-              "\n\n--- BỘ KỊCH BẢN MỚI BỔ SUNG ---\n\n" + res_extra.text
-          )
-          save_project_db(
-              st.session_state.current_project_name,
-              "Cập nhật thêm kịch bản",
-              st.session_state.generated_scripts,
-          )
-          st.success("Đã bổ sung thêm 3 kịch bản mới thành công!")
-          st.rerun()
-        except Exception as e:
-          st.error(f"Lỗi: {e}")
+    with st.spinner("🤖 AI đang sáng tạo thêm 3 góc tiếp cận mới..."):
+      try:
+        if "GEMINI_API_KEY" in st.secrets:
+          genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+        else:
+          genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
 
+        model = genai.GenerativeModel("gemini-1.5-pro-latest")
+        extra_prompt = """
+                Hãy viết THÊM 3 kịch bản quảng cáo mới hoàn toàn cho sản phẩm này ở 3 góc tiếp cận:
+                1. Góc Flash Sale / Săn Sale sốc cuối tuần.
+                2. Góc So sánh chất lượng với thị trường.
+                3. Góc Trải nghiệm thực tế bất ngờ.
+                Giữ nguyên nhịp đọc nhanh, khẩu ngữ dân dã, chia phân cảnh rõ ràng.
+                """
+        res_extra = model.generate_content(extra_prompt)
+        st.session_state.generated_scripts += (
+            "\n\n--- BỘ KỊCH BẢN MỚI BỔ SUNG ---\n\n" + res_extra.text
+        )
+        save_project_db(
+            st.session_state.current_project_name,
+            "Cập nhật thêm kịch bản",
+            st.session_state.generated_scripts,
+        )
+        st.success("Đã bổ sung thêm 3 kịch bản mới thành công!")
+        st.rerun()
+      except Exception as e:
+        st.error(f"Lỗi: {e}")
+
+  # Nút Chuyển sang bước Chia Phân Cảnh & Xuất Prompt Veo 3
   if col_s2.button(
       "👉 Chốt Kịch Bản & Xuất Prompt Veo 3 Đồng Bộ",
       type="primary",
@@ -330,12 +325,20 @@ if st.session_state.generated_scripts:
   ):
     with st.spinner("🤖 Đang chia phân cảnh động và khóa đồng bộ 6 lớp..."):
       try:
-        genai.configure(api_key=api_key)
+        if "GEMINI_API_KEY" in st.secrets:
+          genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+        else:
+          genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
+
         model = genai.GenerativeModel("gemini-1.5-pro-latest")
         prompt_veo = f"""
                 Dựa trên kịch bản đã duyệt sau đây:
                 {st.session_state.generated_scripts}
-                Hãy chia thành N phân cảnh (mỗi cảnh 8 giây), xuất ra Prompt ảnh gốc và Prompt Veo 3 có gắn chuẩn [HANOI_VOICE_LOCK] và khẩu hình out-of-frame.
+                
+                Hãy chia thành N phân cảnh (mỗi cảnh 8 giây). 
+                Với mỗi phân cảnh, hãy xuất ra:
+                1. [IMAGE PROMPT - CẢNH X]: Prompt tiếng Anh tạo ảnh gốc (Start Frame) giữ nguyên [CHARACTER_LOCK], [WARDROBE_LOCK], [BACKGROUND_LOCK], [PRODUCT_SCALE_&_COLOR_LOCK].
+                2. [VEO 3 VIDEO PROMPT - CẢNH X]: Prompt tiếng Anh cho Veo 3 có gắn sẵn chuẩn giọng Hà Nội phù hợp, câu thoại tiếng Việt chuẩn trong ngoặc kép (đã phiên âm số/từ viết tắt thành chữ), kỹ thuật đọc ngoài khung hình (out-of-frame) cho cảnh cận, và âm thanh môi trường SFX.
                 """
         res_v = model.generate_content(prompt_veo)
         st.session_state.veo_prompts = res_v.text
@@ -345,11 +348,13 @@ if st.session_state.generated_scripts:
             st.session_state.generated_scripts,
             status="Hoàn thành Prompt Veo 3",
         )
-        st.success("✅ Đã xuất toàn bộ Prompt Veo 3 thành công!")
+        st.success(
+            "✅ Đã chia phân cảnh và xuất toàn bộ Prompt Veo 3 thành công!"
+        )
       except Exception as e:
         st.error(f"Lỗi: {e}")
 
-# --- 7. HIỂN THỊ KẾT QUẢ PROMPT VEO 3 ---
+# --- 7. HIỂN THỊ KẾT QUẢ PROMPT VEO 3 (COPY 1 CHẠM) ---
 if st.session_state.veo_prompts:
   st.divider()
   st.subheader("🎯 Bộ Prompt Veo 3 Hoàn Chỉnh (Đồng bộ tuyệt đối)")
