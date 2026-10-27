@@ -189,7 +189,7 @@ st.markdown(
     " chuẩn và sinh Prompt Veo 3 chuyên nghiệp."
 )
 
-# Gộp thành 1 ô tải ảnh duy nhất cho cả sản phẩm và thông tin
+# 1. Ô tải ảnh duy nhất
 product_image = st.file_uploader(
     "1️⃣ Tải lên Ảnh Sản Phẩm Thật kèm thông tin chi tiết / thông số"
     " (Shopee/TikTok)",
@@ -209,10 +209,24 @@ if product_image:
         use_container_width=True,
     )
 
+# 2. Ô ghi chú / yêu cầu riêng cho kịch bản (Quyền ưu tiên cao nhất)
+user_notes = st.text_area(
+    "📝 Ghi chú / Yêu cầu riêng cho kịch bản (Quyền ưu tiên cao nhất)",
+    placeholder=(
+        "Nhập các yêu cầu đặc biệt của bạn vào đây (Ví dụ: Nhấn mạnh chương"
+        " trình mua 1 tặng 1, tập trung vào chất liệu inox 304, hoặc đang chạy"
+        " flash sale giảm 50%...)"
+    ),
+    help=(
+        "Nếu bạn nhập nội dung vào ô này, AI sẽ ưu tiên tuyệt đối các yêu cầu"
+        " này khi xây dựng toàn bộ kịch bản."
+    ),
+)
+
 st.info(
     "💡 **Lưu ý:** Giới tính nhân vật, trang phục và chất giọng Hà Nội chuẩn"
     " sẽ được AI tự động phân tích và gán khớp tuyệt đối dựa trên đặc tính sản"
-    " phẩm của bạn."
+    " phẩm."
 )
 
 # --- 5. XỬ LÝ PHÂN TÍCH BẰNG GEMINI ---
@@ -223,25 +237,36 @@ if st.button(
     st.error("Vui lòng tải lên ảnh sản phẩm thật kèm thông tin!")
   else:
     with st.spinner(
-        "🤖 AI đang phân tích sản phẩm, tự động chọn nhân vật/giọng đọc và viết"
-        " kịch bản..."
+        "🤖 AI đang phân tích sản phẩm, ưu tiên ghi chú của bạn và viết kịch"
+        " bản..."
     ):
       try:
-        # Tự động lấy API key từ cấu hình hệ thống bí mật của Streamlit Cloud (st.secrets)
         if "GEMINI_API_KEY" in st.secrets:
           genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
         else:
-          # Hoặc lấy từ biến môi trường nếu có
           genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
 
         model = genai.GenerativeModel("gemini-1.5-pro-latest")
         img_prod = Image.open(product_image)
 
+        # Chèn ghi chú của người dùng vào prompt với mức ưu tiên cao nhất
+        notes_instruction = (
+            f"\n\n🚨 CHÚ Ý ĐẶC BIỆT (QUYỀN ƯU TIÊN CAO NHẤT): Người dùng đã nhập ghi"
+            f" chú/yêu cầu riêng sau đây: '{user_notes}'. Bạn BẮT BUỘC phải tuân"
+            f" thủ tuyệt đối, xoay xỏ nội dung và làm nổi bật các yêu cầu này"
+            f" trong toàn bộ kịch bản và phân cảnh, vượt lên trên các tiêu chuẩn"
+            f" thông thường nếu có xung đột."
+            if user_notes.strip()
+            else ""
+        )
+
         prompt_text = f"""
                 Bạn là Giám đốc Sản xuất Video Quảng cáo AI chuyên nghiệp. Hãy phân tích ảnh sản phẩm kèm thông tin được cung cấp.
+                {notes_instruction}
+                
                 Yêu cầu thực hiện:
                 1. Tự động nhận diện chuẩn tên sản phẩm, chọn biến thể màu sắc chủ đạo (Hero Variant) dựa trên dấu hiệu bán chạy/lượt bán (nếu có).
-                2. Tự động quyết định Giới tính/Nhân vật phù hợp nhất với ngành hàng (ví dụ: nam chủ xưởng cho cơ khí, nữ quản lý kho cho tiện ích, mẹ đi kèm bé cho đồ trẻ em, v.v.) và khóa chặt chất giọng Hà Nội chuẩn tương ứng.
+                2. Tự động quyết định Giới tính/Nhân vật phù hợp nhất với ngành hàng và khóa chặt chất giọng Hà Nội chuẩn tương ứng.
                 3. Thiết lập 6 Khóa đồng bộ: [CHARACTER_LOCK], [WARDROBE_LOCK], [BACKGROUND_LOCK], [VOICE_LOCK] (chuẩn Hà Nội), [PRODUCT_SCALE_&_COLOR_LOCK], [MECHANICS_&_PHYSICS_LOCK].
                 4. Viết ra ĐẦU TIÊN BỘ 3 KỊCH BẢN THOẠI KHÁC NHAU ở 3 góc tiếp cận:
                    - Kịch bản 1: Góc Review Thực Tế / Xưởng tận gốc.
@@ -253,7 +278,7 @@ if st.button(
 
         response = model.generate_content(contents)
         st.session_state.generated_scripts = response.text
-        st.session_state.product_analysis = "Đã phân tích thành công sản phẩm."
+        st.session_state.product_analysis = f"Ghi chú ưu tiên: {user_notes}"
 
         # Tự động lưu vào Database vĩnh viễn
         save_project_db(
@@ -264,10 +289,7 @@ if st.button(
         st.success("✅ Phân tích thành công! Đã lưu vào Database vĩnh viễn.")
         st.rerun()
       except Exception as e:
-        st.error(
-            f"Lỗi khi gọi API (Hãy kiểm tra lại cấu hình GEMINI_API_KEY trên"
-            f" Streamlit Cloud): {e}"
-        )
+        st.error(f"Lỗi khi gọi API: {e}")
 
 # --- 6. HIỂN THỊ KỊCH BẢN & TÍNH NĂNG GỌI THÊM KỊCH BẢN ---
 if st.session_state.generated_scripts:
@@ -296,11 +318,17 @@ if st.session_state.generated_scripts:
           genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
 
         model = genai.GenerativeModel("gemini-1.5-pro-latest")
-        extra_prompt = """
+        extra_notes_instruction = (
+            f"\n\n🚨 GHI CHÚ ƯU TIÊN CAO NHẤT TỪ NGƯỜI DÙNG: '{user_notes}'."
+            if user_notes.strip()
+            else ""
+        )
+        extra_prompt = f"""
                 Hãy viết THÊM 3 kịch bản quảng cáo mới hoàn toàn cho sản phẩm này ở 3 góc tiếp cận:
                 1. Góc Flash Sale / Săn Sale sốc cuối tuần.
                 2. Góc So sánh chất lượng với thị trường.
                 3. Góc Trải nghiệm thực tế bất ngờ.
+                {extra_notes_instruction}
                 Giữ nguyên nhịp đọc nhanh, khẩu ngữ dân dã, chia phân cảnh rõ ràng.
                 """
         res_extra = model.generate_content(extra_prompt)
