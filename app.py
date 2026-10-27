@@ -212,25 +212,35 @@ st.markdown(
 )
 st.divider()
 
-# 1. Ô tải ảnh duy nhất
+# 1. Ô tải lên nhiều ảnh sản phẩm
 st.markdown("### 📦 Thông Tin Đầu Vào Sản Phẩm")
-product_image = st.file_uploader(
-    "Tải lên Ảnh Sản Phẩm Thật kèm thông tin chi tiết / thông số (Shopee/TikTok)",
+product_images = st.file_uploader(
+    "Tải lên nhiều ảnh sản phẩm thật (Nhiều góc độ, thông tin chi tiết,"
+    " thông số...)",
     type=["jpg", "png", "jpeg"],
+    accept_multiple_files=True,  # Cho phép tải nhiều ảnh cùng lúc
     help=(
-        "Tải lên ảnh chụp sản phẩm rõ nét kèm thông tin mô tả để Veo 3 tham"
-        " chiếu."
+        "Bạn có thể chọn nhiều ảnh cùng lúc để AI phân tích toàn diện mọi góc"
+        " cạnh của sản phẩm."
     ),
 )
 
-# Ô xem lại ảnh dạng ẩn (Collapsible)
-if product_image:
-  with st.expander("👁️ Xem lại ảnh đã tải lên (Bấm để mở/ẩn)"):
-    st.image(
-        product_image,
-        caption="Ảnh sản phẩm & Thông tin đã tải lên",
-        use_container_width=True,
-    )
+# Ô xem lại danh sách ảnh dạng ẩn (Collapsible)
+if product_images:
+  with st.expander(
+      f"👁️ Xem lại danh sách ảnh đã tải lên ({len(product_images)} ảnh) (Bấm để"
+      " mở/ẩn)"
+  ):
+    cols = st.columns(
+        min(len(product_images), 3)
+    )  # Hiển thị tối đa 3 cột ảnh cho gọn
+    for idx, img_file in enumerate(product_images):
+      with cols[idx % len(cols)]:
+        st.image(
+            img_file,
+            caption=f"Ảnh {idx + 1}",
+            use_container_width=True,
+        )
 
 # 2. Ô ghi chú / yêu cầu riêng cho kịch bản (Quyền ưu tiên cao nhất)
 user_notes = st.text_area(
@@ -266,12 +276,12 @@ with col_b2:
 
 # --- 5. XỬ LÝ PHÂN TÍCH BẰNG GEMINI ---
 if analyze_btn:
-  if not product_image:
-    st.error("⚠️ Vui lòng tải lên ảnh sản phẩm thật kèm thông tin!")
+  if not product_images:
+    st.error("⚠️ Vui lòng tải lên ít nhất một ảnh sản phẩm!")
   else:
     with st.spinner(
-        "🤖 AI đang phân tích sản phẩm, ưu tiên ghi chú của bạn và viết kịch"
-        " bản..."
+        "🤖 AI đang phân tích toàn bộ các góc ảnh sản phẩm, ưu tiên ghi chú và"
+        " viết kịch bản..."
     ):
       try:
         if "GEMINI_API_KEY" in st.secrets:
@@ -280,7 +290,9 @@ if analyze_btn:
           genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
 
         model = genai.GenerativeModel("gemini-1.5-pro-latest")
-        img_prod = Image.open(product_image)
+
+        # Đưa toàn bộ danh sách ảnh đã tải lên vào danh sách gửi cho Gemini
+        contents = [Image.open(img) for img in product_images]
 
         notes_instruction = (
             f"\n\n🚨 CHÚ Ý ĐẶC BIỆT (QUYỀN ƯU TIÊN CAO NHẤT): Người dùng đã nhập ghi"
@@ -293,11 +305,11 @@ if analyze_btn:
         )
 
         prompt_text = f"""
-                Bạn là Giám đốc Sản xuất Video Quảng cáo AI chuyên nghiệp. Hãy phân tích ảnh sản phẩm kèm thông tin được cung cấp.
+                Bạn là Giám đốc Sản xuất Video Quảng cáo AI chuyên nghiệp. Hãy phân tích toàn bộ các hình ảnh sản phẩm được cung cấp (bao gồm các góc độ, thông số, chi tiết khác nhau).
                 {notes_instruction}
                 
                 Yêu cầu thực hiện:
-                1. Tự động nhận diện chuẩn tên sản phẩm, chọn biến thể màu sắc chủ đạo (Hero Variant) dựa trên dấu hiệu bán chạy/lượt bán (nếu có).
+                1. Tổng hợp thông tin từ tất cả các hình ảnh để nhận diện chuẩn tên sản phẩm, chọn biến thể màu sắc chủ đạo (Hero Variant) dựa trên dấu hiệu bán chạy/lượt bán (nếu có).
                 2. Tự động quyết định Giới tính/Nhân vật phù hợp nhất với ngành hàng và khóa chặt chất giọng Hà Nội chuẩn tương ứng.
                 3. Thiết lập 6 Khóa đồng bộ: [CHARACTER_LOCK], [WARDROBE_LOCK], [BACKGROUND_LOCK], [VOICE_LOCK] (chuẩn Hà Nội), [PRODUCT_SCALE_&_COLOR_LOCK], [MECHANICS_&_PHYSICS_LOCK].
                 4. Viết ra ĐẦU TIÊN BỘ 3 KỊCH BẢN THOẠI KHÁC NHAU ở 3 góc tiếp cận:
@@ -306,7 +318,7 @@ if analyze_btn:
                    - Kịch bản 3: Góc Flash Sale / Săn Sale sốc.
                 Mỗi kịch bản phải có nhịp độ đọc nhanh dồn dập (32-42 từ/cảnh 8 giây), dùng từ ngữ dân dã, cuốn hút.
                 """
-        contents = [img_prod, prompt_text]
+        contents.append(prompt_text)
 
         response = model.generate_content(contents)
         st.session_state.generated_scripts = response.text
@@ -336,7 +348,6 @@ if st.session_state.generated_scripts:
       unsafe_allow_html=True,
   )
 
-  # Hiển thị kịch bản trong khung văn bản để chỉnh sửa
   edited_scripts = st.text_area(
       "Nội dung kịch bản thoại",
       value=st.session_state.generated_scripts,
@@ -348,7 +359,6 @@ if st.session_state.generated_scripts:
   st.markdown("<br>", unsafe_allow_html=True)
   col_s1, col_s2 = st.columns(2)
 
-  # Nút Gọi Thêm Kịch Bản
   if col_s1.button(
       "➕ Gọi thêm 3 Kịch bản khác (Góc tiếp cận mới & Flash Sale)",
       use_container_width=True,
@@ -376,7 +386,7 @@ if st.session_state.generated_scripts:
                 """
         res_extra = model.generate_content(extra_prompt)
         st.session_state.generated_scripts += (
-            "\n\n--- BỘ KỊCH BẢN MỚI BỔ SUNG ---\n\n" + res_extra.text
+            "\n\n--- BỘ KỊCH BẢN MỚI BỔ SUNG --سن\n\n" + res_extra.text
         )
         save_project_db(
             st.session_state.current_project_name,
@@ -388,7 +398,6 @@ if st.session_state.generated_scripts:
       except Exception as e:
         st.error(f"Lỗi: {e}")
 
-  # Nút Chuyển sang bước Chia Phân Cảnh & Xuất Prompt Veo 3
   if col_s2.button(
       "👉 Chốt Kịch Bản & Xuất Prompt Veo 3 Đồng Bộ",
       type="primary",
