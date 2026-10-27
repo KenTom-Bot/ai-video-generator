@@ -142,6 +142,15 @@ def compress_image_for_ai(image_file, max_size=1024, quality=80):
   return Image.open(buffer)
 
 
+# --- HÀM LỌC SẠCH KÝ TỰ RÁC ---
+def clean_script_text(raw_text):
+  if not raw_text:
+    return "Đang cập nhật..."
+  # Xóa bỏ các ký tự số và dấu gạch ngang thừa ở đầu chuỗi (ví dụ: '1---', '2---')
+  cleaned = raw_text.lstrip("1234567890-")
+  return cleaned.strip()
+
+
 # --- 3. KHỞI TẠO BIẾN SESSION STATE ---
 if "current_project_name" not in st.session_state:
   st.session_state.current_project_name = (
@@ -211,17 +220,17 @@ else:
           c2_split = c1_split[1].split("---SPLIT_SCENE_")
           st.session_state.analysis_col2 = c2_split[0].replace("---SPLIT_COL2_START---", "").replace("---SPLIT_COL2_END---", "").strip()
           
-          st.session_state.script_1 = c2_split[1].replace("---", "").strip() if len(c2_split) > 1 else ""
-          st.session_state.script_2 = c2_split[2].replace("---", "").strip() if len(c2_split) > 2 else ""
-          st.session_state.script_3 = c2_split[3].replace("---", "").strip() if len(c2_split) > 3 else ""
+          st.session_state.script_1 = clean_script_text(c2_split[1]) if len(c2_split) > 1 else ""
+          st.session_state.script_2 = clean_script_text(c2_split[2]) if len(c2_split) > 2 else ""
+          st.session_state.script_3 = clean_script_text(c2_split[3]) if len(c2_split) > 3 else ""
         except Exception:
           st.session_state.analysis_col1 = pinfo
           st.session_state.analysis_col2 = ""
-          st.session_state.script_1 = pscript
+          st.session_state.script_1 = clean_script_text(pscript)
         st.rerun()
       if col_p2.button("❌", key=f"del_{pid}"):
         soft_delete_project(pid)
-        st.rerun()  # Tự động làm mới trang ngay khi xóa để cập nhật lại danh sách
+        st.rerun()
 
 st.sidebar.markdown("<br><br><br>", unsafe_allow_html=True)
 st.sidebar.divider()
@@ -274,7 +283,7 @@ if not st.session_state.analysis_col1:
   col_b1, col_b2, col_b3 = st.columns([1, 2, 1])
   with col_b2:
     analyze_btn = st.button(
-        "🚀 Phân Tích & Tạo Kịch Bản Theo Biến Thẻ Hot",
+        "🚀 Phân Tích & Tạo Kịch Bản Theo Biến Thể Hot",
         type="primary",
         use_container_width=True,
     )
@@ -387,13 +396,13 @@ if not st.session_state.analysis_col1:
             c2_split = c1_split[1].split("---SPLIT_SCENE_")
             st.session_state.analysis_col2 = c2_split[0].replace("---SPLIT_COL2_START---", "").replace("---SPLIT_COL2_END---", "").strip()
 
-            st.session_state.script_1 = c2_split[1].replace("---", "").strip() if len(c2_split) > 1 else ""
-            st.session_state.script_2 = c2_split[2].replace("---", "").strip() if len(c2_split) > 2 else ""
-            st.session_state.script_3 = c2_split[3].replace("---", "").strip() if len(c2_split) > 3 else ""
+            st.session_state.script_1 = clean_script_text(c2_split[1]) if len(c2_split) > 1 else ""
+            st.session_state.script_2 = clean_script_text(c2_split[2]) if len(c2_split) > 2 else ""
+            st.session_state.script_3 = clean_script_text(c2_split[3]) if len(c2_split) > 3 else ""
           except Exception:
             st.session_state.analysis_col1 = full_text
             st.session_state.analysis_col2 = ""
-            st.session_state.script_1 = full_text
+            st.session_state.script_1 = clean_script_text(full_text)
 
           extracted_name = "Dự án sản phẩm"
           for line in full_text.split("\n"):
@@ -537,7 +546,7 @@ if st.session_state.analysis_col1:
   )
 
   if st.button(
-      "🚀 Gọi thêm 3 Kịch bản mới theo yêu cầu", use_container_width=True
+      "🚀 Gọi thêm 3 Kịch bản mới theo yêu cầu", use_context_width=True if "use_context_width" in st.button.__code__.co_varnames else False, use_container_width=True
   ):
     with st.spinner("🤖 AI đang sáng tạo thêm 3 góc tiếp cận mới..."):
       try:
