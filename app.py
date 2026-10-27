@@ -218,7 +218,7 @@ product_images = st.file_uploader(
     "Tải lên nhiều ảnh sản phẩm thật (Nhiều góc độ, thông tin chi tiết,"
     " thông số...)",
     type=["jpg", "png", "jpeg"],
-    accept_multiple_files=True,  # Cho phép tải nhiều ảnh cùng lúc
+    accept_multiple_files=True,
     help=(
         "Bạn có thể chọn nhiều ảnh cùng lúc để AI phân tích toàn diện mọi góc"
         " cạnh của sản phẩm."
@@ -231,9 +231,7 @@ if product_images:
       f"👁️ Xem lại danh sách ảnh đã tải lên ({len(product_images)} ảnh) (Bấm để"
       " mở/ẩn)"
   ):
-    cols = st.columns(
-        min(len(product_images), 3)
-    )  # Hiển thị tối đa 3 cột ảnh cho gọn
+    cols = st.columns(min(len(product_images), 3))
     for idx, img_file in enumerate(product_images):
       with cols[idx % len(cols)]:
         st.image(
@@ -289,9 +287,9 @@ if analyze_btn:
         else:
           genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
 
-        model = genai.GenerativeModel("gemini-1.5-pro-latest")
+        # Sử dụng model gemini-2.5-flash chuẩn mới nhất để tránh lỗi 404
+        model = genai.GenerativeModel("gemini-2.5-flash")
 
-        # Đưa toàn bộ danh sách ảnh đã tải lên vào danh sách gửi cho Gemini
         contents = [Image.open(img) for img in product_images]
 
         notes_instruction = (
@@ -370,7 +368,7 @@ if st.session_state.generated_scripts:
         else:
           genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
 
-        model = genai.GenerativeModel("gemini-1.5-pro-latest")
+        model = genai.GenerativeModel("gemini-2.5-flash")
         extra_notes_instruction = (
             f"\n\n🚨 GHI CHÚ ƯU TIÊN CAO NHẤT TỪ NGƯỜI DÙNG: '{user_notes}'."
             if user_notes.strip()
@@ -386,7 +384,7 @@ if st.session_state.generated_scripts:
                 """
         res_extra = model.generate_content(extra_prompt)
         st.session_state.generated_scripts += (
-            "\n\n--- BỘ KỊCH BẢN MỚI BỔ SUNG --سن\n\n" + res_extra.text
+            "\n\n--- BỘ KỊCH BẢN MỚI BỔ SUNG ---\n\n" + res_extra.text
         )
         save_project_db(
             st.session_state.current_project_name,
@@ -410,7 +408,7 @@ if st.session_state.generated_scripts:
         else:
           genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
 
-        model = genai.GenerativeModel("gemini-1.5-pro-latest")
+        model = genai.GenerativeModel("gemini-2.5-flash")
         prompt_veo = f"""
                 Dựa trên kịch bản đã duyệt sau đây:
                 {st.session_state.generated_scripts}
