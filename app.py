@@ -89,12 +89,26 @@ def save_project_db(
   cursor = conn.cursor()
   created_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
   cursor.execute(
-      """
-        INSERT INTO projects (project_name, created_date, product_info, scripts, status, is_deleted)
-        VALUES (?, ?, ?, ?, ?, 0)
-    """,
-      (project_name, created_date, product_info, scripts, status),
+      "SELECT id FROM projects WHERE project_name = ?", (project_name,)
   )
+  existing = cursor.fetchone()
+
+  if existing:
+    cursor.execute(
+        """
+            UPDATE projects SET product_info = ?, scripts = ?, status = ?, created_date = ?
+            WHERE project_name = ?
+        """,
+        (product_info, scripts, status, created_date, project_name),
+    )
+  else:
+    cursor.execute(
+        """
+            INSERT INTO projects (project_name, created_date, product_info, scripts, status, is_deleted)
+            VALUES (?, ?, ?, ?, ?, 0)
+        """,
+        (project_name, created_date, product_info, scripts, status),
+    )
   conn.commit()
   conn.close()
 
@@ -201,7 +215,7 @@ st.markdown(
 )
 st.divider()
 
-# CHỈ HIỂN THỊ PHẦN UPLOAD VÀ NHẬP GHI CHÚ KHI CHƯA CÓ KỊCH BẢN ĐƯỢC TẠO
+# CHỈ HIỂN THỊ Ô UPLOAD KHI CHƯA CÓ KỊCH BẢN
 if not st.session_state.generated_scripts:
   st.markdown("### 📦 Thông Tin Đầu Vào Sản Phẩm")
   product_images = st.file_uploader(
@@ -257,7 +271,6 @@ if not st.session_state.generated_scripts:
         use_container_width=True,
     )
 
-  # --- 5. XỬ LÝ PHÂN TÍCH BẰNG GEMINI ---
   if analyze_btn:
     if not product_images:
       st.error("⚠️ Vui lòng tải lên ít nhất một ảnh sản phẩm!")
@@ -295,23 +308,23 @@ if not st.session_state.generated_scripts:
                     YÊU CẦU ĐẶC BIỆT:
                     - Dòng đầu tiên của phản hồi PHẢI ghi chính xác tên chuẩn của sản phẩm (Ví dụ: Tên sản phẩm: Áo sơ mi nam công sở...).
                     
-                    Định dạng kết quả trả về theo đúng các khối thẻ card rõ ràng:
-                    1. PHẦN PHÂN TÍCH CHI TIẾT SẢN PHẨM (Chia thành 4 khối thẻ card dạng lưới 2 cột: 
-                       - Thẻ 1: Chân dung Khách hàng & Hook 3s.
-                       - Thẻ 2: KOC Chuẩn Việt, Stylist & Khóa Màu (Xác định rõ Hero Variant Hot ở đây).
-                       - Thẻ 3: Giải phẫu Sản phẩm & Khóa Hình học 3D.
-                       - Thẻ 4: Chuẩn Bối Cảnh & Mức Giá).
-                    2. PHẦN 3 KỊCH BẢN THOẠI QUẢNG CÁO (Mỗi kịch bản hiển thị riêng biệt trong một khung thẻ card có tiêu đề rõ ràng, nhịp đọc nhanh dồn dập 32-42 từ/cảnh 8 giây, ngôn từ chuẩn video ngắn dựng sẵn, luôn gắn liền với biến thể Hot đã xác định):
-                       - Kịch bản 1: Góc Review Thực Tế / Xưởng tận gốc.
-                       - Kịch bản 2: Góc Nỗi đau & Tình huống kịch tính.
-                       - Kịch bản 3: Góc Flash Sale / Săn Sale sốc.
+                    YÊU CẦU ĐỊNH DẠNG (CỰC KỲ QUAN TRỌNG - KHÔNG DÙNG THẺ HTML THÔ):
+                    Hãy trả về kết quả bằng định dạng Markdown sạch sẽ gồm các phần sau:
+                    1. PHẦN PHÂN TÍCH CHI TIẾT SẢN PHẨM: Trình bày rõ ràng 4 mục:
+                       - **1. Chân dung Khách hàng & Hook 3s**
+                       - **2. KOC Chuẩn Việt, Stylist & Khóa Màu (Hero Variant Hot)**
+                       - **3. Giải phẫu Sản phẩm & Khóa Hình học 3D**
+                       - **4. Chuẩn Bối Cảnh & Mức Giá**
+                    2. PHẦN 3 KỊCH BẢN THOẠI QUẢNG CÁO:
+                       - **Kịch bản 1: Góc Review Thực Tế / Xưởng tận gốc** (kèm nội dung chi tiết nhịp đọc 32-42 từ/cảnh 8 giây)
+                       - **Kịch bản 2: Góc Nỗi đau & Tình huống kịch tính** (kèm nội dung chi tiết)
+                       - **Kịch bản 3: Góc Flash Sale / Săn Sale sốc** (kèm nội dung chi tiết)
                     """
           contents.append(prompt_text)
 
           response = model.generate_content(contents)
           st.session_state.generated_scripts = response.text
 
-          # Tự động trích xuất tên sản phẩm để làm tên dự án chính xác
           extracted_name = "Dự án sản phẩm"
           for line in response.text.split("\n"):
             if "tên sản phẩm" in line.lower() or "sản phẩm:" in line.lower():
@@ -334,15 +347,12 @@ if not st.session_state.generated_scripts:
               "Phân tích hoàn tất",
               st.session_state.generated_scripts,
           )
-          st.success(
-              "✅ Phân tích thành công! Đã tự động lưu vào Database với tên"
-              " sản phẩm."
-          )
+          st.success("✅ Phân tích thành công! Đã tự động lưu vào Database.")
           st.rerun()
         except Exception as e:
           st.error(f"Lỗi khi gọi API: {e}")
 
-# --- 6. HIỂN THỊ KỊCH BẢN & PHÂN TÍCH DẠNG THẺ (CARDS) ---
+# --- 6. HIỂN THỊ KỊCH BẢN VÀ NÚT XUẤT PROMPT NGAY DƯỚI TỪNG KỊCH BẢN ---
 if st.session_state.generated_scripts:
   st.markdown("<br>", unsafe_allow_html=True)
   st.markdown(
@@ -351,24 +361,20 @@ if st.session_state.generated_scripts:
       unsafe_allow_html=True,
   )
   st.markdown(
-      "<p style='text-align: center;'>Thông tin phân tích và các kịch bản được"
-      " hiển thị rõ ràng bên dưới:</p>",
+      "<p style='text-align: center;'>Bạn có thể xem chi tiết bên dưới. Mỗi kịch"
+      " bản đều có nút xuất Prompt Veo 3 ngay bên dưới để thao tác nhanh:</p>",
       unsafe_allow_html=True,
   )
   st.markdown("<br>", unsafe_allow_html=True)
 
-  st.markdown(
-      '<div style="background-color: #F9FAFB; padding: 25px; border-radius:'
-      ' 12px; border: 1px solid #E5E7EB;">',
-      unsafe_allow_html=True,
-  )
-  st.markdown(st.session_state.generated_scripts)
-  st.markdown("</div>", unsafe_allow_html=True)
+  # Hiển thị nội dung chuẩn bằng container sạch sẽ, không lỗi HTML
+  with st.container():
+    st.markdown(st.session_state.generated_scripts)
 
   st.markdown("<br>", unsafe_allow_html=True)
   st.markdown(
-      "<h3 style='text-align: center; color: #10B981;'>🎯 Chọn Kịch Bản Để"
-      " Xuất Prompt Veo 3</h3>",
+      "<h3 style='text-align: center; color: #10B981;'>🎯 Xuất Prompt Veo 3"
+      " Cho Từng Kịch Bản</h3>",
       unsafe_allow_html=True,
   )
 
@@ -440,7 +446,6 @@ if st.session_state.generated_scripts:
   st.markdown("<br>", unsafe_allow_html=True)
   st.markdown("---")
 
-  # PHẦN GỌI THÊM KỊCH BẢN KÈM Ô GHI CHÚ RIÊNG
   st.markdown("#### ➕ Tạo Thêm Kịch Bản Mới (Góc Tiếp Cận Khác)")
   extra_user_notes = st.text_area(
       "📝 Ghi chú / Yêu cầu riêng cho lần gọi thêm này (Tùy chọn)",
@@ -471,7 +476,7 @@ if st.session_state.generated_scripts:
                 Hãy viết THÊM 3 kịch bản quảng cáo mới hoàn toàn cho sản phẩm này ở 3 góc tiếp cận mới (So sánh chất lượng, Trải nghiệm bất ngờ, Chuyên gia phân tích).
                 {extra_note_instruction}
                 LƯU Ý: Đây là video ngắn dựng sẵn, CẤM tuyệt đối dùng từ ngữ livestream. BẮT BUỘC tiếp tục bám sát và khai thác đúng biến thể Hot (Hero Variant) đã xác định trước đó.
-                Giữ nguyên nhịp đọc nhanh, khẩu ngữ dân dã, chia phân cảnh rõ ràng.
+                Giữ nguyên nhịp đọc nhanh, khẩu ngữ dân dã, chia phân cảnh rõ ràng dưới dạng Markdown sạch.
                 """
         res_extra = model.generate_content(extra_prompt)
         st.session_state.generated_scripts += (
@@ -482,7 +487,7 @@ if st.session_state.generated_scripts:
             "Cập nhật thêm kịch bản",
             st.session_state.generated_scripts,
         )
-        st.success("Đã bổ sung thêm 3 kịch bản mới thành công!")
+        st.success("Đã bổ sung thêm 3 kịch bản mới và cập nhật Database!")
         st.rerun()
       except Exception as e:
         st.error(f"Lỗi: {e}")
