@@ -165,8 +165,8 @@ if "script_2" not in st.session_state:
   st.session_state.script_2 = None
 if "script_3" not in st.session_state:
   st.session_state.script_3 = None
-if "veo_prompts" not in st.session_state:
-  st.session_state.veo_prompts = None
+if "prompt_data" not in st.session_state:
+  st.session_state.prompt_data = None
 
 # --- 4. THANH ĐIỀU HƯỚNG (SIDEBAR) & LỊCH SỬ DỰ ÁN ---
 st.sidebar.markdown(
@@ -185,7 +185,7 @@ if st.sidebar.button(
   st.session_state.script_1 = None
   st.session_state.script_2 = None
   st.session_state.script_3 = None
-  st.session_state.veo_prompts = None
+  st.session_state.prompt_data = None
   st.rerun()
 
 st.sidebar.divider()
@@ -245,7 +245,7 @@ st.markdown(
 st.markdown(
     "<p style='text-align: center; color: #4B5563; font-size: 16px;'>Hệ thống"
     " tự động hóa 100% ngành hàng: Quét tự động biến thể Hot 🔥, giọng đọc"
-    " Hà Nội chuẩn và sinh Prompt Veo 3 chuyên nghiệp.</p>",
+    " Hà Nội chuẩn và sinh Prompt Ảnh & Video chuyên nghiệp.</p>",
     unsafe_allow_html=True,
 )
 st.divider()
@@ -451,88 +451,58 @@ if st.session_state.analysis_col1:
   st.markdown("<br><hr><br>", unsafe_allow_html=True)
   st.markdown(
       "<h2 style='text-align: center; color: #4F46E5;'>🎬 Kịch Bản Quảng Cáo &"
-      " Xuất Prompt Veo 3</h2>",
+      " Xuất Prompt Ảnh & Video</h2>",
       unsafe_allow_html=True,
   )
   st.markdown("<br>", unsafe_allow_html=True)
 
-  # --- KỊCH BẢN 1 ---
-  st.markdown(st.session_state.script_1)
-  if st.button(
-      "👉 Xuất Prompt Veo 3 cho Kịch bản 1 (Biến thể Hot 🔥 - Không Text, Không Logo)",
-      key="btn_v1",
-      type="primary",
-      use_container_width=True,
-  ):
-    with st.spinner("🤖 Đang tạo Prompt Veo 3 cho Kịch bản 1..."):
-      try:
-        if "GEMINI_API_KEY" in st.secrets:
-          genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-        else:
-          genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
-        model = genai.GenerativeModel("gemini-3.8-flash")
-        res_v = model.generate_content(
-            f"Dựa vào Kịch bản 1 sau, hãy xuất Prompt Veo 3 đồng bộ tuyệt đối với biến thể Hot (Nghiêm ngặt: Không text, không logo, không nhạc nền, chỉ có âm thanh hiệu ứng):\n{st.session_state.script_1}"
-        )
-        st.session_state.veo_prompts = res_v.text
-        st.success("✅ Đã xuất Prompt Veo 3 Kịch bản 1 thành công!")
-        st.rerun()
-      except Exception as e:
-        st.error(f"Lỗi: {e}")
+  # --- HÀM HỖ TRỢ XUẤT PROMPT TỪNG KỊCH BẢN ---
+  def handle_script_section(script_title, script_content, key_suffix):
+    st.markdown(script_content)
+    
+    if st.button(f"👉 Tạo Prompt Ảnh & Video cho {script_title}", key=f"btn_{key_suffix}", type="primary", use_container_width=True):
+      with st.spinner(f"🤖 Đang dịch thuật và tạo Prompt Ảnh & Video cho {script_title}..."):
+        try:
+          if "GEMINI_API_KEY" in st.secrets:
+            genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+          else:
+            genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
+          model = genai.GenerativeModel("gemini-3.8-flash")
+          res = model.generate_content(
+              f"Dựa vào kịch bản sau, hãy trích xuất ra các câu lệnh (Prompt) chuẩn bằng tiếng Anh cho từng phân cảnh:\n"
+              f"1. Prompt Ảnh tĩnh (Midjourney/Flux) cho phân cảnh.\n"
+              f"2. Prompt Video (Veo 3 Pro - mượt mà, chống vấp thoại) cho phân cảnh.\n"
+              f"Định dạng trả về rõ ràng từng phân cảnh gồm: [CẢNH X] - Prompt Ảnh và Prompt Video riêng biệt, tuyệt đối không text, không logo.\n\n{script_content}"
+          )
+          st.session_state[f"prompts_{key_suffix}"] = res.text
+          st.success(f"✅ Đã tạo xong Prompt cho {script_title}!")
+          st.rerun()
+        except Exception as e:
+          st.error(f"Lỗi: {e}")
 
-  st.markdown("<br>", unsafe_allow_html=True)
-  st.markdown("---")
+    # Hiển thị khu vực prompt 2 cột nếu đã được tạo
+    if st.session_state.get(f"prompts_{key_suffix}"):
+      st.markdown(f"#### 🎯 Bộ Prompt Chi Tiết Cho {script_title}")
+      st.markdown("Dưới đây là các prompt được chia theo từng cặp Ảnh & Video gọn gàng, dễ nhìn, dễ copy:")
+      
+      # Hiển thị trực tiếp nội dung dạng text hoặc chia nhỏ để copy nhanh
+      st.text_area(
+          f"Nội dung Prompt Ảnh & Video ({script_title})",
+          value=st.session_state[f"prompts_{key_suffix}"],
+          height=250,
+          key=f"ta_{key_suffix}"
+      )
+
+  # --- KỊCH BẢN 1 ---
+  handle_script_section("Kịch bản 1", st.session_state.script_1, "s1")
+  st.markdown("<br><hr><br>", unsafe_allow_html=True)
 
   # --- KỊCH BẢN 2 ---
-  st.markdown(st.session_state.script_2)
-  if st.button(
-      "👉 Xuất Prompt Veo 3 cho Kịch bản 2 (Biến thể Hot 🔥 - Không Text, Không Logo)",
-      key="btn_v2",
-      type="primary",
-      use_container_width=True,
-  ):
-    with st.spinner("🤖 Đang tạo Prompt Veo 3 cho Kịch bản 2..."):
-      try:
-        if "GEMINI_API_KEY" in st.secrets:
-          genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-        else:
-          genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
-        model = genai.GenerativeModel("gemini-3.8-flash")
-        res_v = model.generate_content(
-            f"Dựa vào Kịch bản 2 sau, hãy xuất Prompt Veo 3 đồng bộ tuyệt đối với biến thể Hot (Nghiêm ngặt: Không text, không logo, không nhạc nền, chỉ có âm thanh hiệu ứng):\n{st.session_state.script_2}"
-        )
-        st.session_state.veo_prompts = res_v.text
-        st.success("✅ Đã xuất Prompt Veo 3 Kịch bản 2 thành công!")
-        st.rerun()
-      except Exception as e:
-        st.error(f"Lỗi: {e}")
-
-  st.markdown("<br>", unsafe_allow_html=True)
-  st.markdown("---")
+  handle_script_section("Kịch bản 2", st.session_state.script_2, "s2")
+  st.markdown("<br><hr><br>", unsafe_allow_html=True)
 
   # --- KỊCH BẢN 3 ---
-  st.markdown(st.session_state.script_3)
-  if st.button(
-      "👉 Xuất Prompt Veo 3 cho Kịch bản 3 (Biến thể Hot 🔥 - Không Text, Không Logo)",
-      key="btn_v3",
-      type="primary",
-      use_container_width=True,
-  ):
-    with st.spinner("🤖 Đang tạo Prompt Veo 3 cho Kịch bản 3..."):
-      try:
-        if "GEMINI_API_KEY" in st.secrets:
-          genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-        else:
-          genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
-        model = genai.GenerativeModel("gemini-3.8-flash")
-        res_v = model.generate_content(
-            f"Dựa vào Kịch bản 3 sau, hãy xuất Prompt Veo 3 đồng bộ tuyệt đối với biến thể Hot (Nghiêm ngặt: Không text, không logo, không nhạc nền, chỉ có âm thanh hiệu ứng):\n{st.session_state.script_3}"
-        )
-        st.session_state.veo_prompts = res_v.text
-        st.success("✅ Đã xuất Prompt Veo 3 Kịch bản 3 thành công!")
-        st.rerun()
-      except Exception as e:
-        st.error(f"Lỗi: {e}")
+  handle_script_section("Kịch bản 3", st.session_state.script_3, "s3")
 
   st.markdown("<br>", unsafe_allow_html=True)
   st.markdown("---")
@@ -584,16 +554,3 @@ if st.session_state.analysis_col1:
         st.rerun()
       except Exception as e:
         st.error(f"Lỗi: {e}")
-
-# --- 7. HIỂN THỊ KẾT QUẢ PROMPT VEO 3 ---
-if st.session_state.veo_prompts:
-  st.markdown("<br>", unsafe_allow_html=True)
-  st.markdown(
-      "<h3 style='text-align: center; color: #10B981;'>🎯 Bộ Prompt Veo 3 Hoàn"
-      " Chỉnh (Không Text, Không Logo)</h3>",
-      unsafe_allow_html=True,
-  )
-  st.markdown(
-      "Sao chép các Prompt dưới đây dán trực tiếp vào Veo 3 để tạo video:"
-  )
-  st.code(st.session_state.veo_prompts, language="text")
