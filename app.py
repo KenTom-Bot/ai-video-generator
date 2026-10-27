@@ -14,7 +14,7 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-ADMIN_PASSWORD = "123"  # Mật khẩu truy cập app
+ADMIN_PASSWORD = "123"
 
 
 def check_password():
@@ -39,7 +39,7 @@ def check_password():
           on_change=password_entered,
           key="password",
       )
-      st.warning("⚠️ App này được bảo mật tuyệt đối.")
+      st.warning("⚠️ App được bảo mật tuyệt đối.")
     return False
   elif not st.session_state["password_correct"]:
     st.text_input(
@@ -58,7 +58,7 @@ if not check_password():
   st.stop()
 
 
-# --- 1. CẤU HÌNH KẾT NỐI SUPABASE DATABASE VĨNH VIỄN ---
+# --- 1. CẤU HÌNH KẾT NỐI SUPABASE DATABASE ---
 SUPABASE_URL = st.secrets["SUPABASE_URL"]
 SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
@@ -101,21 +101,21 @@ def get_all_projects():
     response = (
         supabase.table("projects")
         .select("id, project_name, created_date, product_info, scripts, status")
-        .eq("is_deleted", 0)
         .order("id", desc=True)
         .execute()
     )
-    rows = [
-        (
+    rows = []
+    for item in response.data:
+      is_del = item.get("is_deleted", 0)
+      if is_del == 0:
+        rows.append((
             item["id"],
             item["project_name"],
-            item["created_date"],
-            item["product_info"],
-            item["scripts"],
-            item["status"],
-        )
-        for item in response.data
-    ]
+            item.get("created_date", ""),
+            item.get("product_info", ""),
+            item.get("scripts", ""),
+            item.get("status", ""),
+        ))
     return rows
   except Exception:
     return []
@@ -160,7 +160,7 @@ if "script_3" not in st.session_state:
 if "veo_prompts" not in st.session_state:
   st.session_state.veo_prompts = None
 
-# --- 4. THANH ĐIỀU HƯỚNG (SIDEBAR) & QUẢN LÝ DỰ ÁN ---
+# --- 4. THANH ĐIỀU HƯỚNG (SIDEBAR) & LỊCH SỬ DỰ ÁN ---
 st.sidebar.markdown(
     "<h3 style='text-align: center;'>🗂️ Quản lý Dự án</h3>",
     unsafe_allow_html=True,
@@ -182,9 +182,9 @@ if st.sidebar.button(
 
 st.sidebar.divider()
 
-st.sidebar.markdown("🏷️ **Cài đặt Tên Dự Án**")
+st.sidebar.markdown("🏷️ **Tên Dự Án Hiện Tại**")
 project_title_input = st.sidebar.text_input(
-    "Tên dự án hiện tại",
+    "Tên dự án",
     value=st.session_state.current_project_name,
     label_visibility="collapsed",
 )
@@ -202,7 +202,7 @@ else:
   for pid, pname, pdate, pinfo, pscript, pstatus in projects:
     if search_query.lower() in pname.lower():
       col_p1, col_p2 = st.sidebar.columns([4, 1])
-      if col_p1.button(f"📁 {pname[:20]}...", key=f"load_{pid}"):
+      if col_p1.button(f"📁 {pname[:22]}...", key=f"load_{pid}"):
         st.session_state.current_project_name = pname
         try:
           c1_split = pscript.split("---SPLIT_COL1_END---")
@@ -225,7 +225,7 @@ else:
 
 st.sidebar.markdown("<br><br><br>", unsafe_allow_html=True)
 st.sidebar.divider()
-if st.sidebar.button("🚪 Đăng xuất tài khoản", use_container_width=True):
+if st.sidebar.button("🚪 Đăng xuất", use_container_width=True):
   st.session_state["password_correct"] = False
   st.rerun()
 
@@ -236,9 +236,8 @@ st.markdown(
 )
 st.markdown(
     "<p style='text-align: center; color: #4B5563; font-size: 16px;'>Hệ thống"
-    " tự động hóa 100% ngành hàng: Phân tích sản phẩm, khóa đồng bộ nhân vật,"
-    " trang phục, giọng đọc Hà Nội chuẩn và sinh Prompt Veo 3 chuyên"
-    " nghiệp.</p>",
+    " tự động hóa 100% ngành hàng: Quét tự động biến thể Hot 🔥, giọng đọc"
+    " Hà Nội chuẩn và sinh Prompt Veo 3 chuyên nghiệp.</p>",
     unsafe_allow_html=True,
 )
 st.divider()
@@ -246,17 +245,15 @@ st.divider()
 if not st.session_state.analysis_col1:
   st.markdown("### 📦 Thông Tin Đầu Vào Sản Phẩm")
   product_images = st.file_uploader(
-      "Tải lên nhiều ảnh sản phẩm thật (Nhiều góc độ, thông tin chi tiết,"
-      " thông số...)",
+      "Tải lên ảnh chụp màn hình sản phẩm có gắn nhãn/icon Hot (hoặc nhiều ảnh mẫu)",
       type=["jpg", "png", "jpeg"],
       accept_multiple_files=True,
-      help="Chọn nhiều ảnh cùng lúc để AI phân tích toàn diện sản phẩm.",
+      help="Tải ảnh lên để AI tự động phát hiện biến thể gắn nhãn Hot bán chạy nhất.",
   )
 
   if product_images:
     with st.expander(
-        f"👁️ Xem lại danh sách ảnh đã tải lên ({len(product_images)} ảnh) (Bấm để"
-        " mở/ẩn)"
+        f"👁️ Xem lại danh sách ảnh đã tải lên ({len(product_images)} ảnh)"
     ):
       cols = st.columns(min(len(product_images), 3))
       for idx, img_file in enumerate(product_images):
@@ -268,8 +265,8 @@ if not st.session_state.analysis_col1:
   user_notes = st.text_area(
       "📝 Ghi chú / Yêu cầu riêng cho kịch bản (Quyền ưu tiên cao nhất)",
       placeholder=(
-          "Nhập các yêu cầu đặc biệt của bạn vào đây (Ví dụ: Nhấn mạnh chương"
-          " trình mua 1 tặng 1, tập trung vào chất liệu inox 304...)"
+          "Nhập yêu cầu riêng nếu muốn đổi màu khác (Nếu để trống, AI tự động"
+          " chọn biến thể có icon Hot 🔥 làm chủ lực)"
       ),
   )
 
@@ -277,18 +274,17 @@ if not st.session_state.analysis_col1:
   col_b1, col_b2, col_b3 = st.columns([1, 2, 1])
   with col_b2:
     analyze_btn = st.button(
-        "🚀 Phân Tích Sản Phẩm & Tạo Kịch Bản",
+        "🚀 Phân Tích & Tạo Kịch Bản Theo Biến Thể Hot",
         type="primary",
         use_container_width=True,
     )
 
   if analyze_btn:
     if not product_images:
-      st.error("⚠️ Vui lòng tải lên ít nhất một ảnh sản phẩm thuần túy!")
+      st.error("⚠️ Vui lòng tải lên ít nhất một ảnh sản phẩm!")
     else:
       with st.spinner(
-          "🤖 AI đang nén ảnh tối ưu token, phân tích biến thể Hot và viết"
-          " kịch bản chuẩn..."
+          "🤖 AI đang quét icon Hot 🔥 trên ảnh, khóa biến thể bán chạy và viết kịch bản..."
       ):
         try:
           if "GEMINI_API_KEY" in st.secrets:
@@ -300,20 +296,25 @@ if not st.session_state.analysis_col1:
           contents = [compress_image_for_ai(img) for img in product_images]
 
           notes_instruction = (
-              f"\n\n🚨 GHI CHÚ RIÊNG: '{user_notes}'."
+              f"\n\n🚨 GHI CHÚ RIÊNG CỦA NGƯỜI DÙNG: '{user_notes}'."
               if user_notes.strip()
               else ""
           )
 
           prompt_text = f"""
-                    Bạn là Giám đốc Sản xuất Video Quảng cáo AI chuyên nghiệp cho video ngắn dựng sẵn (Reels, TikTok - KHÔNG LIVESTREAM). Hãy phân tích các hình ảnh sản phẩm.
+                    Bạn là Giám đốc Sản xuất Video Quảng cáo AI chuyên nghiệp cho video ngắn dựng sẵn (Reels, TikTok - KHÔNG LIVESTREAM). 
+                    Hãy phân tích kỹ các hình ảnh sản phẩm được tải lên.
                     {notes_instruction}
+                    
+                    QUY TẮC BẮT BUỘC VỀ BIẾN THỂ BÁN CHẠY (HERO VARIANT):
+                    - Bạn PHẢI quét kỹ các hình ảnh giao diện được tải lên để tìm các nhãn, biểu tượng thể hiện sản phẩm bán chạy (như icon ngọn lửa 🔥, chữ "Hot", lượt mua cao). 
+                    - BIẾN THỂ NÀO CÓ ICON 🔥 HOẶC NHÃN HOT (Ví dụ: Đầm ĐEN-34D có icon Hot trong ảnh) PHẢI ĐƯỢC TỰ ĐỘNG XÁC ĐỊNH LÀ BIẾN THỂ CHỦ LỰC (HERO VARIANT)[cite: 13].
+                    - Toàn bộ nội dung phân tích và 3 kịch bản quảng cáo phía dưới BẮT BUỘC phải lấy biến thể mang nhãn Hot 🔥 đó làm tâm điểm xuyên suốt.
                     
                     QUY TẮC CẤM TUYỆT ĐỐI VỀ VIDEO & HÌNH ẢNH:
                     - CẤM dùng từ ngữ livestream ("mọi người ơi", "giỏ hàng phiên live", "giảm theo suất", "vào giỏ hàng").
                     - CẤM hiển thị phần 3 câu hook giữ chân người xem.
-                    - **TUYỆT ĐỐI KHÔNG TEXT, KHÔNG LOGO, KHÔNG NHẠC NỀN** trong toàn bộ mô tả phân cảnh hoặc khi tạo ảnh/video. Chỉ cho phép hiệu ứng âm thanh (sound effects) nếu có.
-                    - BẮT BUỘC khóa chặt vào biến thể bán chạy nhất (Hero Variant) đã xác định xuyên suốt các kịch bản.
+                    - **TUYỆT ĐỐI KHÔNG TEXT, KHÔNG LOGO, KHÔNG NHẠC NỀN** trong mô tả phân cảnh hoặc khi tạo ảnh/video (chỉ cho phép âm thanh hiệu ứng sound effects).
                     
                     QUY TRÌNH SÁNG TẠO KỊCH BẢN CHUẨN:
                     1. Viết kịch bản LỜI THOẠI (Voiceover) tổng thể trước với nhịp đọc nhanh dồn dập, đủ dài cho toàn bộ video (90 - 120 từ tương đương 3 phân cảnh).
@@ -324,9 +325,9 @@ if not st.session_state.analysis_col1:
                     
                     TRẢ VỀ KẾT QUẢ ĐÚNG THEO CẤU TRÚC PHÂN TÁCH SAU:
                     ---SPLIT_COL1_START---
-                    ### 📌 Cột Trái: Chân dung & Hero Variant
+                    ### 📌 Cột Trái: Chân dung & Hero Variant Hot 🔥
                     - **1. Chân dung Khách hàng & Đặc tính:** ...
-                    - **2. KOC Chuẩn Việt, Stylist & Khóa Màu (Hero Variant Hot):** ...
+                    - **2. KOC Chuẩn Việt, Stylist & Khóa Màu (Hero Variant Hot 🔥):** ... (Phải nêu rõ biến thể mang icon Hot trên ảnh)
                     ---SPLIT_COL1_END---
 
                     ---SPLIT_COL2_START---
@@ -336,10 +337,10 @@ if not st.session_state.analysis_col1:
                     ---SPLIT_COL2_END---
                     
                     ---SPLIT_SCENE_1---
-                    ### 🎬 Kịch bản 1: Góc Review Thực Tế / Xưởng tận gốc
+                    ### 🎬 Kịch bản 1: Góc Review Thực Tế / Xưởng tận gốc (Tập trung biến thể Hot)
                     - **Kịch bản Lời thoại Voiceover Tổng thể (90-120 từ, nhịp đọc nhanh Hà Nội):** [...]
                     - **Phân cảnh 1 (8 giây):**
-                      - *Hình ảnh:* [Mô tả chi tiết góc máy, diễn xuất nhân vật, hoàn toàn KHÔNG TEXT, KHÔNG LOGO]
+                      - *Hình ảnh:* [Mô tả chi tiết góc máy biến thể Hot, hoàn toàn KHÔNG TEXT, KHÔNG LOGO]
                       - *Lời thoại phân cảnh:* [Lời thoại tương ứng]
                     - **Phân cảnh 2 (8 giây):**
                       - *Hình ảnh:* [Mô tả chi tiết góc máy, hoàn toàn KHÔNG TEXT, KHÔNG LOGO]
@@ -349,7 +350,7 @@ if not st.session_state.analysis_col1:
                       - *Lời thoại phân cảnh:* [Lời thoại tương ứng]
                     
                     ---SPLIT_SCENE_2---
-                    ### 🎬 Kịch bản 2: Góc Nỗi đau & Tình huống kịch tính
+                    ### 🎬 Kịch bản 2: Góc Nỗi đau & Tình huống kịch tính (Tập trung biến thể Hot)
                     - **Kịch bản Lời thoại Voiceover Tổng thể (90-120 từ, nhịp đọc nhanh Hà Nội):** [...]
                     - **Phân cảnh 1 (8 giây):**
                       - *Hình ảnh:* [Mô tả chi tiết, hoàn toàn KHÔNG TEXT, KHÔNG LOGO]
@@ -362,7 +363,7 @@ if not st.session_state.analysis_col1:
                       - *Lời thoại phân cảnh:* [...]
                     
                     ---SPLIT_SCENE_3---
-                    ### 🎬 Kịch bản 3: Góc Flash Sale / Săn Sale sốc
+                    ### 🎬 Kịch bản 3: Góc Flash Sale / Săn Sale sốc (Tập trung biến thể Hot)
                     - **Kịch bản Lời thoại Voiceover Tổng thể (90-120 từ, nhịp đọc nhanh Hà Nội):** [...]
                     - **Phân cảnh 1 (8 giây):**
                       - *Hình ảnh:* [Mô tả chi tiết, hoàn toàn KHÔNG TEXT, KHÔNG LOGO]
@@ -386,9 +387,9 @@ if not st.session_state.analysis_col1:
             c2_split = c1_split[1].split("---SPLIT_SCENE_")
             st.session_state.analysis_col2 = c2_split[0].replace("---SPLIT_COL2_START---", "").replace("---SPLIT_COL2_END---", "").strip()
 
-            st.session_state.script_1 = c2_split[1] if len(c2_split) > 1 else "Đang cập nhật..."
-            st.session_state.script_2 = c2_split[2] if len(c2_split) > 2 else "Đang cập nhật..."
-            st.session_state.script_3 = c2_split[3] if len(c2_split) > 3 else "Đang cập nhật..."
+            st.session_state.script_1 = c2_split[1] if len(c2_split) > 1 else ""
+            st.session_state.script_2 = c2_split[2] if len(c2_split) > 2 else ""
+            st.session_state.script_3 = c2_split[3] if len(c2_split) > 3 else ""
           except Exception:
             st.session_state.analysis_col1 = full_text
             st.session_state.analysis_col2 = ""
@@ -416,17 +417,17 @@ if not st.session_state.analysis_col1:
               st.session_state.analysis_col1 + "\n---SPLIT_COL1_END---\n" + st.session_state.analysis_col2,
               full_text,
           )
-          st.success("✅ Phân tích thành công và đã tự động lưu dự án!")
+          st.success("✅ Phân tích thành công theo biến thể Hot 🔥 và đã lưu lên Supabase!")
           st.rerun()
         except Exception as e:
           st.error(f"Lỗi khi gọi API: {e}")
 
-# --- 6. HIỂN THỊ GIAO DIỆN CHIA 2 CỘT ĐỐI XỨNG & KHÔNG CÓ TEXT/LOGO ---
+# --- 6. HIỂN THỊ GIAO DIỆN CHIA 2 CỘT ĐỐI XỨNG & KỊCH BẢN CHUẨN ---
 if st.session_state.analysis_col1:
   st.markdown("<br>", unsafe_allow_html=True)
   st.markdown(
-      "<h2 style='text-align: center; color: #4F46E5;'>🔍 Phân Tích Chi Tiết"
-      " Sản Phẩm</h2>",
+      "<h2 style='text-align: center; color: #4F46E5;'>🔍 Phân Tích Biến Thể Hot"
+      " & Chi Tiết Sản Phẩm</h2>",
       unsafe_allow_html=True,
   )
   st.markdown("<br>", unsafe_allow_html=True)
@@ -459,7 +460,7 @@ if st.session_state.analysis_col1:
   )
   st.markdown("<br>", unsafe_allow_html=True)
 
-  # --- HIỂN THỊ KỊCH BẢN 1 ---
+  # --- KỊCH BẢN 1 ---
   st.markdown(
       '<div style="background-color: #F3F4F6; padding: 25px; border-radius:'
       ' 12px; border: 1px solid #E5E7EB;">',
@@ -468,7 +469,7 @@ if st.session_state.analysis_col1:
   st.markdown(st.session_state.script_1)
   st.markdown("</div>", unsafe_allow_html=True)
   if st.button(
-      "👉 Xuất Prompt Veo 3 cho Kịch bản 1 (Không Text, Không Logo)",
+      "👉 Xuất Prompt Veo 3 cho Kịch bản 1 (Biến thể Hot 🔥 - Không Text, Không Logo)",
       key="btn_v1",
       type="primary",
       use_container_width=True,
@@ -481,7 +482,7 @@ if st.session_state.analysis_col1:
           genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
         model = genai.GenerativeModel("gemini-3.8-flash")
         res_v = model.generate_content(
-            f"Dựa vào Kịch bản 1 sau, hãy xuất Prompt Veo 3 đồng bộ tuyệt đối (Lưu ý nghiêm ngặt: Tuyệt đối không text, không logo, không nhạc nền, chỉ có âm thanh hiệu ứng):\n{st.session_state.script_1}"
+            f"Dựa vào Kịch bản 1 sau, hãy xuất Prompt Veo 3 đồng bộ tuyệt đối với biến thể Hot (Nghiêm ngặt: Không text, không logo, không nhạc nền, chỉ có âm thanh hiệu ứng):\n{st.session_state.script_1}"
         )
         st.session_state.veo_prompts = res_v.text
         st.success("✅ Đã xuất Prompt Veo 3 Kịch bản 1 thành công!")
@@ -491,7 +492,7 @@ if st.session_state.analysis_col1:
 
   st.markdown("<br>", unsafe_allow_html=True)
 
-  # --- HIỂN THỊ KỊCH BẢN 2 ---
+  # --- KỊCH BẢN 2 ---
   st.markdown(
       '<div style="background-color: #F3F4F6; padding: 25px; border-radius:'
       ' 12px; border: 1px solid #E5E7EB;">',
@@ -500,7 +501,7 @@ if st.session_state.analysis_col1:
   st.markdown(st.session_state.script_2)
   st.markdown("</div>", unsafe_allow_html=True)
   if st.button(
-      "👉 Xuất Prompt Veo 3 cho Kịch bản 2 (Không Text, Không Logo)",
+      "👉 Xuất Prompt Veo 3 cho Kịch bản 2 (Biến thể Hot 🔥 - Không Text, Không Logo)",
       key="btn_v2",
       type="primary",
       use_container_width=True,
@@ -513,7 +514,7 @@ if st.session_state.analysis_col1:
           genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
         model = genai.GenerativeModel("gemini-3.8-flash")
         res_v = model.generate_content(
-            f"Dựa vào Kịch bản 2 sau, hãy xuất Prompt Veo 3 đồng bộ tuyệt đối (Lưu ý nghiêm ngặt: Tuyệt đối không text, không logo, không nhạc nền, chỉ có âm thanh hiệu ứng):\n{st.session_state.script_2}"
+            f"Dựa vào Kịch bản 2 sau, hãy xuất Prompt Veo 3 đồng bộ tuyệt đối với biến thể Hot (Nghiêm ngặt: Không text, không logo, không nhạc nền, chỉ có âm thanh hiệu ứng):\n{st.session_state.script_2}"
         )
         st.session_state.veo_prompts = res_v.text
         st.success("✅ Đã xuất Prompt Veo 3 Kịch bản 2 thành công!")
@@ -523,7 +524,7 @@ if st.session_state.analysis_col1:
 
   st.markdown("<br>", unsafe_allow_html=True)
 
-  # --- HIỂN THỊ KỊCH BẢN 3 ---
+  # --- KỊCH BẢN 3 ---
   st.markdown(
       '<div style="background-color: #F3F4F6; padding: 25px; border-radius:'
       ' 12px; border: 1px solid #E5E7EB;">',
@@ -532,7 +533,7 @@ if st.session_state.analysis_col1:
   st.markdown(st.session_state.script_3)
   st.markdown("</div>", unsafe_allow_html=True)
   if st.button(
-      "👉 Xuất Prompt Veo 3 cho Kịch bản 3 (Không Text, Không Logo)",
+      "👉 Xuất Prompt Veo 3 cho Kịch bản 3 (Biến thể Hot 🔥 - Không Text, Không Logo)",
       key="btn_v3",
       type="primary",
       use_container_width=True,
@@ -545,7 +546,7 @@ if st.session_state.analysis_col1:
           genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
         model = genai.GenerativeModel("gemini-3.8-flash")
         res_v = model.generate_content(
-            f"Dựa vào Kịch bản 3 sau, hãy xuất Prompt Veo 3 đồng bộ tuyệt đối (Lưu ý nghiêm ngặt: Tuyệt đối không text, không logo, không nhạc nền, chỉ có âm thanh hiệu ứng):\n{st.session_state.script_3}"
+            f"Dựa vào Kịch bản 3 sau, hãy xuất Prompt Veo 3 đồng bộ tuyệt đối với biến thể Hot (Nghiêm ngặt: Không text, không logo, không nhạc nền, chỉ có âm thanh hiệu ứng):\n{st.session_state.script_3}"
         )
         st.session_state.veo_prompts = res_v.text
         st.success("✅ Đã xuất Prompt Veo 3 Kịch bản 3 thành công!")
@@ -580,9 +581,9 @@ if st.session_state.analysis_col1:
             else ""
         )
         extra_prompt = f"""
-                Hãy viết THÊM 3 kịch bản quảng cáo mới hoàn toàn ở 3 góc tiếp cận mới (So sánh chất lượng, Trải nghiệm bất ngờ, Chuyên gia phân tích).
+                Hãy viết THÊM 3 kịch bản quảng cáo mới hoàn toàn ở 3 góc tiếp cận mới.
                 {extra_note_instruction}
-                LƯU Ý NGHIÊM NGẶT: Hoàn toàn KHÔNG TEXT, KHÔNG LOGO, KHÔNG NHẠC NỀN (chỉ có âm thanh hiệu ứng). Viết kịch bản voice tổng thể trước rồi mới chia thành các phân cảnh chuẩn 8 giây (mỗi phân cảnh có hình ảnh ở trên và lời thoại phân cảnh ở dưới).
+                LƯU Ý NGHIÊM NGẶT: Bắt buộc khai thác biến thể mang nhãn Hot 🔥 làm trọng tâm. Hoàn toàn KHÔNG TEXT, KHÔNG LOGO, KHÔNG NHẠC NỀN. Viết kịch bản voice tổng thể trước rồi chia thành các phân cảnh chuẩn 8 giây (hình ảnh ở trên, lời thoại ở dưới).
                 """
         res_extra = model.generate_content(extra_prompt)
         st.session_state.script_3 += "\n\n" + res_extra.text
@@ -604,15 +605,15 @@ if st.session_state.analysis_col1:
       except Exception as e:
         st.error(f"Lỗi: {e}")
 
-# --- 7. HIỂN THỊ KẾT QUẢ PROMPT VEO 3 (COPY 1 CHẠM) ---
+# --- 7. HIỂN THỊ KẾT QUẢ PROMPT VEO 3 ---
 if st.session_state.veo_prompts:
   st.markdown("<br>", unsafe_allow_html=True)
   st.markdown(
       "<h3 style='text-align: center; color: #10B981;'>🎯 Bộ Prompt Veo 3 Hoàn"
-      " Chỉnh (Đồng bộ tuyệt đối)</h3>",
+      " Chỉnh (Không Text, Không Logo)</h3>",
       unsafe_allow_html=True,
   )
   st.markdown(
-      "Sao chép các Prompt dưới đây (Đảm bảo không text, không logo, không nhạc nền) để dán trực tiếp vào Veo 3:"
+      "Sao chép các Prompt dưới đây dán trực tiếp vào Veo 3 để tạo video:"
   )
   st.code(st.session_state.veo_prompts, language="text")
