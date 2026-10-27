@@ -1,9 +1,9 @@
 import datetime
 import os
-import sqlite3
 import streamlit as st
 import google.generativeai as genai
 from PIL import Image
+from supabase import create_client, Client
 
 # --- 0. CẤU HÌNH HỆ THỐNG & BẢO MẬT ĐĂNG NHẬP ---
 st.set_page_config(
@@ -57,82 +57,68 @@ if not check_password():
   st.stop()
 
 
-# --- 1. CẤU HÌNH DATABASE VĨNH VIỄN (SQLITE) ---
-DB_FILE = "projects_database.db"
-
-
-def init_db():
-  conn = sqlite3.connect(DB_FILE)
-  cursor = conn.cursor()
-  cursor.execute("""
-        CREATE TABLE IF NOT EXISTS projects (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            project_name TEXT,
-            created_date TEXT,
-            product_info TEXT,
-            scripts TEXT,
-            status TEXT,
-            is_deleted INTEGER DEFAULT 0
-        )
-    """)
-  conn.commit()
-  conn.close()
-
-
-init_db()
+# --- 1. CẤU HÌNH KẾT NỐI SUPABASE DATABASE VĨNH VIỄN ---
+SUPABASE_URL = st.secrets["SUPABASE_URL"]
+SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
 def save_project_db(
     project_name, product_info, scripts, status="Đã tạo kịch bản"
 ):
-  conn = sqlite3.connect(DB_FILE)
-  cursor = conn.cursor()
   created_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-  cursor.execute(
-      "SELECT id FROM projects WHERE project_name = ?", (project_name,)
-  )
-  existing = cursor.fetchone()
 
-  if existing:
-    cursor.execute(
-        """
-            UPDATE projects SET product_info = ?, scripts = ?, status = ?, created_date = ?
-            WHERE project_name = ?
-        """,
-        (product_info, scripts, status, created_date, project_name),
-    )
+  existing = (
+      supabase.table("projects")
+      .select("id")
+      .eq("project_name", project_name)
+      .execute()
+  )
+
+  if existing.data:
+    supabase.table("projects").update({
+        "product_info": product_info,
+        "scripts": scripts,
+        "status": status,
+        "created_date": created_date,
+    }).eq("project_name", project_name).execute()
   else:
-    cursor.execute(
-        """
-            INSERT INTO projects (project_name, created_date, product_info, scripts, status, is_deleted)
-            VALUES (?, ?, ?, ?, ?, 0)
-        """,
-        (project_name, created_date, product_info, scripts, status),
-    )
-  conn.commit()
-  conn.close()
+    supabase.table("projects").insert({
+        "project_name": project_name,
+        "created_date": created_date,
+        "product_info": product_info,
+        "scripts": scripts,
+        "status": status,
+        "is_deleted": 0,
+    }).execute()
 
 
 def get_all_projects():
-  conn = sqlite3.connect(DB_FILE)
-  cursor = conn.cursor()
-  cursor.execute(
-      "SELECT id, project_name, created_date, product_info, scripts, status"
-      " FROM projects WHERE is_deleted = 0 ORDER BY id DESC"
+  response = (
+      supabase.table("projects")
+      .select("id, project_name, created_date, product_info, scripts, status")
+      .eq("is_deleted", 0)
+      .order("id", desc=True)
+      .execute()
   )
-  rows = cursor.fetchall()
-  conn.close()
+  rows = [
+      (
+          item["id"],
+          item["project_name"],
+          item["created_date"],
+          item["product_info"],
+          item["scripts"],
+          item["status"],
+      )
+      for item in response.data
+  ]
   return rows
 
 
 def soft_delete_project(project_id):
-  conn = sqlite3.connect(DB_FILE)
-  cursor = conn.cursor()
-  cursor.execute(
-      "UPDATE projects SET is_deleted = 1 WHERE id = ?", (project_id,)
-  )
-  conn.commit()
-  conn.close()
+  supabase.table("projects").update({"is_deleted": 1}).eq(
+      "id", project_id
+  ).execute()
 
 
 # --- 2. KHỞI TẠO BIẾN SESSION STATE ---
@@ -347,7 +333,7 @@ if not st.session_state.generated_scripts:
               "Phân tích hoàn tất",
               st.session_state.generated_scripts,
           )
-          st.success("✅ Phân tích thành công! Đã tự động lưu vào Database.")
+          st.success("✅ Phân tích thành công! Đã lưu lên Supabase Cloud.")
           st.rerun()
         except Exception as e:
           st.error(f"Lỗi khi gọi API: {e}")
@@ -367,7 +353,6 @@ if st.session_state.generated_scripts:
   )
   st.markdown("<br>", unsafe_allow_html=True)
 
-  # Hiển thị nội dung chuẩn bằng container sạch sẽ, không lỗi HTML
   with st.container():
     st.markdown(st.session_state.generated_scripts)
 
@@ -487,7 +472,7 @@ if st.session_state.generated_scripts:
             "Cập nhật thêm kịch bản",
             st.session_state.generated_scripts,
         )
-        st.success("Đã bổ sung thêm 3 kịch bản mới và cập nhật Database!")
+        st.success("Đã bổ sung thêm 3 kịch bản mới và cập nhật Supabase!")
         st.rerun()
       except Exception as e:
         st.error(f"Lỗi: {e}")
