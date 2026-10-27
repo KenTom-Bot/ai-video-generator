@@ -82,6 +82,7 @@ def save_project_db(
           "scripts": scripts,
           "status": status,
           "created_date": created_date,
+          "is_deleted": 0,
       }).eq("project_name", project_name).execute()
     else:
       supabase.table("projects").insert({
@@ -101,21 +102,20 @@ def get_all_projects():
     response = (
         supabase.table("projects")
         .select("id, project_name, created_date, product_info, scripts, status")
+        .eq("is_deleted", 0)
         .order("id", desc=True)
         .execute()
     )
     rows = []
     for item in response.data:
-      is_del = item.get("is_deleted", 0)
-      if is_del == 0:
-        rows.append((
-            item["id"],
-            item["project_name"],
-            item.get("created_date", ""),
-            item.get("product_info", ""),
-            item.get("scripts", ""),
-            item.get("status", ""),
-        ))
+      rows.append((
+          item["id"],
+          item["project_name"],
+          item.get("created_date", ""),
+          item.get("product_info", ""),
+          item.get("scripts", ""),
+          item.get("status", ""),
+      ))
     return rows
   except Exception:
     return []
@@ -211,9 +211,9 @@ else:
           c2_split = c1_split[1].split("---SPLIT_SCENE_")
           st.session_state.analysis_col2 = c2_split[0].replace("---SPLIT_COL2_START---", "").replace("---SPLIT_COL2_END---", "").strip()
           
-          st.session_state.script_1 = c2_split[1] if len(c2_split) > 1 else ""
-          st.session_state.script_2 = c2_split[2] if len(c2_split) > 2 else ""
-          st.session_state.script_3 = c2_split[3] if len(c2_split) > 3 else ""
+          st.session_state.script_1 = c2_split[1].replace("---", "").strip() if len(c2_split) > 1 else ""
+          st.session_state.script_2 = c2_split[2].replace("---", "").strip() if len(c2_split) > 2 else ""
+          st.session_state.script_3 = c2_split[3].replace("---", "").strip() if len(c2_split) > 3 else ""
         except Exception:
           st.session_state.analysis_col1 = pinfo
           st.session_state.analysis_col2 = ""
@@ -221,7 +221,7 @@ else:
         st.rerun()
       if col_p2.button("❌", key=f"del_{pid}"):
         soft_delete_project(pid)
-        st.rerun()
+        st.rerun()  # Tự động làm mới trang ngay khi xóa để cập nhật lại danh sách
 
 st.sidebar.markdown("<br><br><br>", unsafe_allow_html=True)
 st.sidebar.divider()
@@ -274,7 +274,7 @@ if not st.session_state.analysis_col1:
   col_b1, col_b2, col_b3 = st.columns([1, 2, 1])
   with col_b2:
     analyze_btn = st.button(
-        "🚀 Phân Tích & Tạo Kịch Bản Theo Biến Thể Hot",
+        "🚀 Phân Tích & Tạo Kịch Bản Theo Biến Thẻ Hot",
         type="primary",
         use_container_width=True,
     )
@@ -327,7 +327,7 @@ if not st.session_state.analysis_col1:
                     ---SPLIT_COL1_START---
                     ### 📌 Cột Trái: Chân dung & Hero Variant Hot 🔥
                     - **1. Chân dung Khách hàng & Đặc tính:** ...
-                    - **2. KOC Chuẩn Việt, Stylist & Khóa Màu (Hero Variant Hot 🔥):** ... (Phải nêu rõ biến thể mang icon Hot trên ảnh)
+                    - **2. KOC Chuẩn Việt, Stylist & Khóa Màu (Hero Variant Hot 🔥):** ...
                     ---SPLIT_COL1_END---
 
                     ---SPLIT_COL2_START---
@@ -340,7 +340,7 @@ if not st.session_state.analysis_col1:
                     ### 🎬 Kịch bản 1: Góc Review Thực Tế / Xưởng tận gốc (Tập trung biến thể Hot)
                     - **Kịch bản Lời thoại Voiceover Tổng thể (90-120 từ, nhịp đọc nhanh Hà Nội):** [...]
                     - **Phân cảnh 1 (8 giây):**
-                      - *Hình ảnh:* [Mô tả chi tiết góc máy biến thể Hot, hoàn toàn KHÔNG TEXT, KHÔNG LOGO]
+                      - *Hình ảnh:* [Mô tả chi tiết góc máy, hoàn toàn KHÔNG TEXT, KHÔNG LOGO]
                       - *Lời thoại phân cảnh:* [Lời thoại tương ứng]
                     - **Phân cảnh 2 (8 giây):**
                       - *Hình ảnh:* [Mô tả chi tiết góc máy, hoàn toàn KHÔNG TEXT, KHÔNG LOGO]
@@ -387,9 +387,9 @@ if not st.session_state.analysis_col1:
             c2_split = c1_split[1].split("---SPLIT_SCENE_")
             st.session_state.analysis_col2 = c2_split[0].replace("---SPLIT_COL2_START---", "").replace("---SPLIT_COL2_END---", "").strip()
 
-            st.session_state.script_1 = c2_split[1] if len(c2_split) > 1 else ""
-            st.session_state.script_2 = c2_split[2] if len(c2_split) > 2 else ""
-            st.session_state.script_3 = c2_split[3] if len(c2_split) > 3 else ""
+            st.session_state.script_1 = c2_split[1].replace("---", "").strip() if len(c2_split) > 1 else ""
+            st.session_state.script_2 = c2_split[2].replace("---", "").strip() if len(c2_split) > 2 else ""
+            st.session_state.script_3 = c2_split[3].replace("---", "").strip() if len(c2_split) > 3 else ""
           except Exception:
             st.session_state.analysis_col1 = full_text
             st.session_state.analysis_col2 = ""
@@ -422,7 +422,7 @@ if not st.session_state.analysis_col1:
         except Exception as e:
           st.error(f"Lỗi khi gọi API: {e}")
 
-# --- 6. HIỂN THỊ GIAO DIỆN CHIA 2 CỘT ĐỐI XỨNG & KỊCH BẢN CHUẨN ---
+# --- 6. HIỂN THỊ GIAO DIỆN CHIA 2 CỘT SẠCH SẼ, KHÔNG KHUNG THỪA ---
 if st.session_state.analysis_col1:
   st.markdown("<br>", unsafe_allow_html=True)
   st.markdown(
@@ -435,22 +435,10 @@ if st.session_state.analysis_col1:
   col_left, col_right = st.columns(2)
 
   with col_left:
-    st.markdown(
-        '<div style="background-color: #F9FAFB; padding: 20px; border-radius:'
-        ' 10px; border: 1px solid #E5E7EB; min-height: 350px;">',
-        unsafe_allow_html=True,
-    )
     st.markdown(st.session_state.analysis_col1)
-    st.markdown("</div>", unsafe_allow_html=True)
 
   with col_right:
-    st.markdown(
-        '<div style="background-color: #F9FAFB; padding: 20px; border-radius:'
-        ' 10px; border: 1px solid #E5E7EB; min-height: 350px;">',
-        unsafe_allow_html=True,
-    )
     st.markdown(st.session_state.analysis_col2 if st.session_state.analysis_col2 else "Đang cập nhật...")
-    st.markdown("</div>", unsafe_allow_html=True)
 
   st.markdown("<br><hr><br>", unsafe_allow_html=True)
   st.markdown(
@@ -461,13 +449,7 @@ if st.session_state.analysis_col1:
   st.markdown("<br>", unsafe_allow_html=True)
 
   # --- KỊCH BẢN 1 ---
-  st.markdown(
-      '<div style="background-color: #F3F4F6; padding: 25px; border-radius:'
-      ' 12px; border: 1px solid #E5E7EB;">',
-      unsafe_allow_html=True,
-  )
   st.markdown(st.session_state.script_1)
-  st.markdown("</div>", unsafe_allow_html=True)
   if st.button(
       "👉 Xuất Prompt Veo 3 cho Kịch bản 1 (Biến thể Hot 🔥 - Không Text, Không Logo)",
       key="btn_v1",
@@ -491,15 +473,10 @@ if st.session_state.analysis_col1:
         st.error(f"Lỗi: {e}")
 
   st.markdown("<br>", unsafe_allow_html=True)
+  st.markdown("---")
 
   # --- KỊCH BẢN 2 ---
-  st.markdown(
-      '<div style="background-color: #F3F4F6; padding: 25px; border-radius:'
-      ' 12px; border: 1px solid #E5E7EB;">',
-      unsafe_allow_html=True,
-  )
   st.markdown(st.session_state.script_2)
-  st.markdown("</div>", unsafe_allow_html=True)
   if st.button(
       "👉 Xuất Prompt Veo 3 cho Kịch bản 2 (Biến thể Hot 🔥 - Không Text, Không Logo)",
       key="btn_v2",
@@ -523,15 +500,10 @@ if st.session_state.analysis_col1:
         st.error(f"Lỗi: {e}")
 
   st.markdown("<br>", unsafe_allow_html=True)
+  st.markdown("---")
 
   # --- KỊCH BẢN 3 ---
-  st.markdown(
-      '<div style="background-color: #F3F4F6; padding: 25px; border-radius:'
-      ' 12px; border: 1px solid #E5E7EB;">',
-      unsafe_allow_html=True,
-  )
   st.markdown(st.session_state.script_3)
-  st.markdown("</div>", unsafe_allow_html=True)
   if st.button(
       "👉 Xuất Prompt Veo 3 cho Kịch bản 3 (Biến thể Hot 🔥 - Không Text, Không Logo)",
       key="btn_v3",
