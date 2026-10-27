@@ -6,7 +6,7 @@ import google.generativeai as genai
 from PIL import Image
 from supabase import create_client, Client
 
-# --- 0. CẤU HÌNH HỆ THỐNG & BẢO MẬT ĐĂNG NHẬP ---
+# --- 0. CẤU HÌNH HỆ THỐNG & BẢO MẬT ĐĂng NHẬP ---
 st.set_page_config(
     page_title="AI Video Viral",
     page_icon="🎬",
@@ -149,8 +149,12 @@ if "current_project_name" not in st.session_state:
   )
 if "product_analysis" not in st.session_state:
   st.session_state.product_analysis = None
-if "all_scripts" not in st.session_state:
-  st.session_state.all_scripts = None
+if "script_1" not in st.session_state:
+  st.session_state.script_1 = None
+if "script_2" not in st.session_state:
+  st.session_state.script_2 = None
+if "script_3" not in st.session_state:
+  st.session_state.script_3 = None
 if "veo_prompts" not in st.session_state:
   st.session_state.veo_prompts = None
 
@@ -167,7 +171,9 @@ if st.sidebar.button(
       f"Dự án mới - {datetime.datetime.now().strftime('%d/%m/%Y')}"
   )
   st.session_state.product_analysis = None
-  st.session_state.all_scripts = None
+  st.session_state.script_1 = None
+  st.session_state.script_2 = None
+  st.session_state.script_3 = None
   st.session_state.veo_prompts = None
   st.rerun()
 
@@ -196,7 +202,13 @@ else:
       if col_p1.button(f"📁 {pname[:20]}...", key=f"load_{pid}"):
         st.session_state.current_project_name = pname
         st.session_state.product_analysis = pinfo
-        st.session_state.all_scripts = pscript
+        try:
+          parts = pscript.split("---SPLIT_SCENE_")
+          st.session_state.script_1 = parts[1] if len(parts) > 1 else ""
+          st.session_state.script_2 = parts[2] if len(parts) > 2 else ""
+          st.session_state.script_3 = parts[3] if len(parts) > 3 else ""
+        except Exception:
+          st.session_state.script_1 = pscript
         st.rerun()
       if col_p2.button("❌", key=f"del_{pid}"):
         soft_delete_project(pid)
@@ -293,35 +305,36 @@ if not st.session_state.product_analysis:
                     - CẤM hiển thị phần 3 câu hook giữ chân người xem.
                     - BẮT BUỘC khóa chặt vào biến thể bán chạy nhất (Hero Variant) đã xác định xuyên suốt các kịch bản.
                     
-                    QUY TRÌNH SÁNG TẠO KỊCH BẢN (CỰC KỲ QUAN TRỌNG):
-                    1. Viết kịch bản LỜI THOẠI (Voiceover) chuẩn trước với nhịp đọc nhanh dồn dập (32-42 từ/cảnh).
+                    QUY TRÌNH SÁNG TẠO KỊCH BẢN CHUẨN:
+                    1. Viết kịch bản LỜI THOẠI (Voiceover) chuẩn trước với nhịp đọc nhanh dồn dập (32-42 từ).
                     2. Dựa trực tiếp vào lời thoại đó để chia ra các PHÂN CẢNH, mỗi phân cảnh có thời lượng cố định chuẩn **8 giây**.
                     
                     Dòng đầu tiên PHẢI ghi chính xác tên sản phẩm (Ví dụ: Tên sản phẩm: Đầm body...).
                     
-                    TRẢ VỀ KẾT QUẢ THEO ĐÚNG CẤU TRÚC MARKDOWN SAU:
-                    # PHÂN TÍCH CHI TIẾT SẢN PHẨM
+                    TRẢ VỀ KẾT QUẢ ĐÚNG THEO CẤU TRÚC PHÂN TÁCH SAU (SỬ DỤNG CHÍNH XÁC CÁC THẺ NÀY):
+                    ---SPLIT_ANALYZE---
+                    ### 🔍 Phân Tích Chi Tiết Sản Phẩm
                     - **1. Chân dung Khách hàng & Đặc tính:** ...
                     - **2. KOC Chuẩn Việt, Stylist & Khóa Màu (Hero Variant Hot):** ...
                     - **3. Giải phẫu Sản phẩm & Khóa Hình học 3D:** ...
                     - **4. Chuẩn Bối Cảnh & Mức Giá:** ...
-
-                    # KỊCH BẢN 1
-                    **Góc Review Thực Tế / Xưởng tận gốc**
+                    
+                    ---SPLIT_SCENE_1---
+                    ### 🎬 Kịch bản 1: Góc Review Thực Tế / Xưởng tận gốc
                     - **Kịch bản Lời thoại Voiceover:** [...]
                     - **Phân cảnh 1 (8 giây):** [...]
                     - **Phân cảnh 2 (8 giây):** [...]
                     - **Phân cảnh 3 (8 giây):** [...]
-
-                    # KỊCH BẢN 2
-                    **Góc Nỗi đau & Tình huống kịch tính**
+                    
+                    ---SPLIT_SCENE_2---
+                    ### 🎬 Kịch bản 2: Góc Nỗi đau & Tình huống kịch tính
                     - **Kịch bản Lời thoại Voiceover:** [...]
                     - **Phân cảnh 1 (8 giây):** [...]
                     - **Phân cảnh 2 (8 giây):** [...]
                     - **Phân cảnh 3 (8 giây):** [...]
-
-                    # KỊCH BẢN 3
-                    **Góc Flash Sale / Săn Sale sốc**
+                    
+                    ---SPLIT_SCENE_3---
+                    ### 🎬 Kịch bản 3: Góc Flash Sale / Săn Sale sốc
                     - **Kịch bản Lời thoại Voiceover:** [...]
                     - **Phân cảnh 1 (8 giây):** [...]
                     - **Phân cảnh 2 (8 giây):** [...]
@@ -332,14 +345,21 @@ if not st.session_state.product_analysis:
           response = model.generate_content(contents)
           full_text = response.text
 
-          # Tách đơn giản an toàn bằng tiêu đề
+          # Tách an toàn tuyệt đối dựa vào các thẻ phân tách rõ ràng
           try:
-            parts = full_text.split("# KỊCH BẢN 1")
-            st.session_state.product_analysis = parts[0].replace("# PHÂN TÍCH CHI TIẾT SẢN PHẨM", "").strip()
-            st.session_state.all_scripts = "# KỊCH BẢN 1" + parts[1] if len(parts) > 1 else full_text
+            p_split = full_text.split("---SPLIT_ANALYZE---")
+            analyze_part = p_split[1].split("---SPLIT_SCENE_")[0] if len(p_split) > 1 else full_text
+            st.session_state.product_analysis = analyze_part
+
+            s_parts = full_text.split("---SPLIT_SCENE_")
+            st.session_state.script_1 = s_parts[1] if len(s_parts) > 1 else "Đang cập nhật..."
+            st.session_state.script_2 = s_parts[2] if len(s_parts) > 2 else "Đang cập nhật..."
+            st.session_state.script_3 = s_parts[3] if len(s_parts) > 3 else "Đang cập nhật..."
           except Exception:
             st.session_state.product_analysis = full_text
-            st.session_state.all_scripts = full_text
+            st.session_state.script_1 = full_text
+            st.session_state.script_2 = ""
+            st.session_state.script_3 = ""
 
           extracted_name = "Dự án sản phẩm"
           for line in full_text.split("\n"):
@@ -361,7 +381,7 @@ if not st.session_state.product_analysis:
           save_project_db(
               st.session_state.current_project_name,
               st.session_state.product_analysis,
-              st.session_state.all_scripts,
+              full_text,
           )
           st.success("✅ Phân tích thành công và đã tự động lưu dự án!")
           st.rerun()
@@ -412,26 +432,17 @@ if st.session_state.product_analysis:
   )
   st.markdown("<br>", unsafe_allow_html=True)
 
-  # Cắt nhỏ hiển thị riêng từng kịch bản rõ ràng
-  scripts_text = st.session_state.all_scripts if st.session_state.all_scripts else ""
-  
-  try:
-    s_parts = scripts_text.split("# KỊCH BẢN")
-    script_1_content = "# KỊCH BẢN" + s_parts[1] if len(s_parts) > 1 else "Đang cập nhật..."
-    script_2_content = "# KỊCH BẢN" + s_parts[2] if len(s_parts) > 2 else "Đang cập nhật..."
-    script_3_content = "# Kịch bản 3" + s_parts[3] if len(s_parts) > 3 else "Đang cập nhật..."
-  except Exception:
-    script_1_content = scripts_text
-    script_2_content = ""
-    script_3_content = ""
-
   # --- HIỂN THỊ KỊCH BẢN 1 ---
   st.markdown(
       '<div style="background-color: #F3F4F6; padding: 25px; border-radius:'
       ' 12px; border: 1px solid #E5E7EB;">',
       unsafe_allow_html=True,
   )
-  st.markdown(script_1_content)
+  st.markdown(
+      st.session_state.script_1
+      if st.session_state.script_1
+      else "Đang cập nhật..."
+  )
   st.markdown("</div>", unsafe_allow_html=True)
   if st.button(
       "👉 Xuất Prompt Veo 3 cho Kịch bản 1",
@@ -447,7 +458,7 @@ if st.session_state.product_analysis:
           genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
         model = genai.GenerativeModel("gemini-3.8-flash")
         res_v = model.generate_content(
-            f"Dựa vào Kịch bản 1 sau (có voice và các phân cảnh 8 giây), hãy xuất Prompt Veo 3 đồng bộ tuyệt đối:\n{script_1_content}"
+            f"Dựa vào Kịch bản 1 sau (có voice và các phân cảnh 8 giây), hãy xuất Prompt Veo 3 đồng bộ tuyệt đối:\n{st.session_state.script_1}"
         )
         st.session_state.veo_prompts = res_v.text
         st.success("✅ Đã xuất Prompt Veo 3 Kịch bản 1 thành công!")
@@ -463,7 +474,11 @@ if st.session_state.product_analysis:
       ' 12px; border: 1px solid #E5E7EB;">',
       unsafe_allow_html=True,
   )
-  st.markdown(script_2_content)
+  st.markdown(
+      st.session_state.script_2
+      if st.session_state.script_2
+      else "Đang cập nhật..."
+  )
   st.markdown("</div>", unsafe_allow_html=True)
   if st.button(
       "👉 Xuất Prompt Veo 3 cho Kịch bản 2",
@@ -479,7 +494,7 @@ if st.session_state.product_analysis:
           genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
         model = genai.GenerativeModel("gemini-3.8-flash")
         res_v = model.generate_content(
-            f"Dựa vào Kịch bản 2 sau (có voice và các phân cảnh 8 giây), hãy xuất Prompt Veo 3 đồng bộ tuyệt đối:\n{script_2_content}"
+            f"Dựa vào Kịch bản 2 sau (có voice và các phân cảnh 8 giây), hãy xuất Prompt Veo 3 đồng bộ tuyệt đối:\n{st.session_state.script_2}"
         )
         st.session_state.veo_prompts = res_v.text
         st.success("✅ Đã xuất Prompt Veo 3 Kịch bản 2 thành công!")
@@ -495,7 +510,11 @@ if st.session_state.product_analysis:
       ' 12px; border: 1px solid #E5E7EB;">',
       unsafe_allow_html=True,
   )
-  st.markdown(script_3_content)
+  st.markdown(
+      st.session_state.script_3
+      if st.session_state.script_3
+      else "Đang cập nhật..."
+  )
   st.markdown("</div>", unsafe_allow_html=True)
   if st.button(
       "👉 Xuất Prompt Veo 3 cho Kịch bản 3",
@@ -511,7 +530,7 @@ if st.session_state.product_analysis:
           genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
         model = genai.GenerativeModel("gemini-3.8-flash")
         res_v = model.generate_content(
-            f"Dựa vào Kịch bản 3 sau (có voice và các phân cảnh 8 giây), hãy xuất Prompt Veo 3 đồng bộ tuyệt đối:\n{script_3_content}"
+            f"Dựa vào Kịch bản 3 sau (có voice và các phân cảnh 8 giây), hãy xuất Prompt Veo 3 đồng bộ tuyệt đối:\n{st.session_state.script_3}"
         )
         st.session_state.veo_prompts = res_v.text
         st.success("✅ Đã xuất Prompt Veo 3 Kịch bản 3 thành công!")
@@ -551,11 +570,17 @@ if st.session_state.product_analysis:
                 LƯU Ý: Viết kịch bản voice trước rồi mới chia thành các phân cảnh chuẩn 8 giây. CẤM tuyệt đối dùng từ ngữ livestream và KHÔNG hiển thị câu hook. BẮT BUỘC tiếp tục bám sát và khai thác đúng biến thể Hot đã xác định.
                 """
         res_extra = model.generate_content(extra_prompt)
-        st.session_state.all_scripts += "\n\n" + res_extra.text
+        st.session_state.script_3 += "\n\n" + res_extra.text
         save_project_db(
             st.session_state.current_project_name,
             st.session_state.product_analysis,
-            st.session_state.all_scripts,
+            st.session_state.product_analysis
+            + "\n---SPLIT_ANALYZE---\n---SPLIT_SCENE_1---\n"
+            + st.session_state.script_1
+            + "\n---SPLIT_SCENE_2---\n"
+            + st.session_state.script_2
+            + "\n---SPLIT_SCENE_3---\n"
+            + st.session_state.script_3,
         )
         st.success("Đã bổ sung thêm kịch bản mới thành công!")
         st.rerun()
