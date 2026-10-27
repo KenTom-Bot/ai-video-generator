@@ -65,7 +65,6 @@ DB_FILE = "projects_database.db"
 
 
 def init_db():
-  """Hàm tạo bảng lưu trữ dự án nếu chưa tồn tại"""
   conn = sqlite3.connect(DB_FILE)
   cursor = conn.cursor()
   cursor.execute("""
@@ -89,7 +88,6 @@ init_db()
 def save_project_db(
     project_name, product_info, scripts, status="Đã tạo kịch bản"
 ):
-  """Hàm lưu hoặc cập nhật dự án vào Database"""
   conn = sqlite3.connect(DB_FILE)
   cursor = conn.cursor()
   created_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -105,7 +103,6 @@ def save_project_db(
 
 
 def get_all_projects():
-  """Hàm lấy danh sách dự án chưa bị xóa"""
   conn = sqlite3.connect(DB_FILE)
   cursor = conn.cursor()
   cursor.execute(
@@ -118,7 +115,6 @@ def get_all_projects():
 
 
 def soft_delete_project(project_id):
-  """Hàm xóa mềm dự án"""
   conn = sqlite3.connect(DB_FILE)
   cursor = conn.cursor()
   cursor.execute(
@@ -146,7 +142,6 @@ st.sidebar.markdown(
     unsafe_allow_html=True,
 )
 
-# Nút Tạo dự án mới (Căn giữa)
 if st.sidebar.button(
     "➕ Tạo Dự Án Mới", type="primary", use_container_width=True
 ):
@@ -160,7 +155,6 @@ if st.sidebar.button(
 
 st.sidebar.divider()
 
-# Ô Tên dự án ở Sidebar
 st.sidebar.markdown("🏷️ **Cài đặt Tên Dự Án**")
 project_title_input = st.sidebar.text_input(
     "Tên dự án hiện tại",
@@ -171,7 +165,6 @@ st.session_state.current_project_name = project_title_input
 
 st.sidebar.divider()
 
-# Thanh tìm kiếm dự án cũ
 search_query = st.sidebar.text_input("🔍 Tìm kiếm dự án cũ", "")
 projects = get_all_projects()
 
@@ -191,14 +184,13 @@ else:
         soft_delete_project(pid)
         st.rerun()
 
-# Đẩy nút Đăng xuất xuống dưới cùng của Sidebar
 st.sidebar.markdown("<br><br><br>", unsafe_allow_html=True)
 st.sidebar.divider()
 if st.sidebar.button("🚪 Đăng xuất tài khoản", use_container_width=True):
   st.session_state["password_correct"] = False
   st.rerun()
 
-# --- 4. GIAO DIỆN CHÍNH (CĂN CHỈNH ĐẸP MẮT, CÂN ĐỐI) ---
+# --- 4. GIAO DIỆN CHÍNH ---
 st.markdown(
     "<h1 style='text-align: center; color: #1F2937;'>🎬 AI Video Viral</h1>",
     unsafe_allow_html=True,
@@ -212,7 +204,6 @@ st.markdown(
 )
 st.divider()
 
-# 1. Ô tải lên nhiều ảnh sản phẩm
 st.markdown("### 📦 Thông Tin Đầu Vào Sản Phẩm")
 product_images = st.file_uploader(
     "Tải lên nhiều ảnh sản phẩm thật (Nhiều góc độ, thông tin chi tiết,"
@@ -225,7 +216,6 @@ product_images = st.file_uploader(
     ),
 )
 
-# Ô xem lại danh sách ảnh dạng ẩn (Collapsible)
 if product_images:
   with st.expander(
       f"👁️ Xem lại danh sách ảnh đã tải lên ({len(product_images)} ảnh) (Bấm để"
@@ -235,12 +225,9 @@ if product_images:
     for idx, img_file in enumerate(product_images):
       with cols[idx % len(cols)]:
         st.image(
-            img_file,
-            caption=f"Ảnh {idx + 1}",
-            use_container_width=True,
+            img_file, caption=f"Ảnh {idx + 1}", use_container_width=True
         )
 
-# 2. Ô ghi chú / yêu cầu riêng cho kịch bản (Quyền ưu tiên cao nhất)
 user_notes = st.text_area(
     "📝 Ghi chú / Yêu cầu riêng cho kịch bản (Quyền ưu tiên cao nhất)",
     placeholder=(
@@ -263,7 +250,6 @@ st.markdown(
 )
 st.markdown("<br>", unsafe_allow_html=True)
 
-# Nút Phân Tích (Căn giữa màn hình)
 col_b1, col_b2, col_b3 = st.columns([1, 2, 1])
 with col_b2:
   analyze_btn = st.button(
@@ -287,9 +273,7 @@ if analyze_btn:
         else:
           genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
 
-        # Cập nhật chuẩn theo yêu cầu API mới nhất của Google
         model = genai.GenerativeModel("gemini-3.8-flash")
-
         contents = [Image.open(img) for img in product_images]
 
         notes_instruction = (
@@ -310,7 +294,7 @@ if analyze_btn:
                 1. Tổng hợp thông tin từ tất cả các hình ảnh để nhận diện chuẩn tên sản phẩm, chọn biến thể màu sắc chủ đạo (Hero Variant) dựa trên dấu hiệu bán chạy/lượt bán (nếu có).
                 2. Tự động quyết định Giới tính/Nhân vật phù hợp nhất với ngành hàng và khóa chặt chất giọng Hà Nội chuẩn tương ứng.
                 3. Thiết lập 6 Khóa đồng bộ: [CHARACTER_LOCK], [WARDROBE_LOCK], [BACKGROUND_LOCK], [VOICE_LOCK] (chuẩn Hà Nội), [PRODUCT_SCALE_&_COLOR_LOCK], [MECHANICS_&_PHYSICS_LOCK].
-                4. Viết ra ĐẦU TIÊN BỘ 3 KỊCH BẢN THOẠI KHÁC NHAU ở 3 góc tiếp cận:
+                4. Viết ra ĐẦU TIÊN BỘ 3 KỊCH BẢN THOẠI KHÁC NHAU ở 3 góc tiếp cận (Định dạng rõ ràng Kịch bản 1, Kịch bản 2, Kịch bản 3):
                    - Kịch bản 1: Góc Review Thực Tế / Xưởng tận gốc.
                    - Kịch bản 2: Góc Nỗi đau & Tình huống kịch tính.
                    - Kịch bản 3: Góc Flash Sale / Săn Sale sốc.
@@ -332,7 +316,7 @@ if analyze_btn:
       except Exception as e:
         st.error(f"Lỗi khi gọi API: {e}")
 
-# --- 6. HIỂN THỊ KỊCH BẢN NGAY LẬP TỨC Ở ĐẦU MÀN HÌNH KHI ĐƯỢC TẠO ---
+# --- 6. HIỂN THỊ KỊCH BẢN GỌN GÀNG, RÕ RÀNG THEO TỪNG TAB ---
 if st.session_state.generated_scripts:
   st.markdown("<br>", unsafe_allow_html=True)
   st.markdown(
@@ -341,24 +325,127 @@ if st.session_state.generated_scripts:
       unsafe_allow_html=True,
   )
   st.markdown(
-      "<p style='text-align: center;'>Bạn có thể đọc duyệt, chỉnh sửa trực tiếp"
-      " lời thoại hoặc gọi thêm các góc tiếp cận mới bên dưới:</p>",
+      "<p style='text-align: center;'>Dưới đây là các kịch bản được chia theo"
+      " góc tiếp cận. Bạn có thể xem, chỉnh sửa hoặc bấm trực tiếp nút xuất"
+      " Prompt Veo 3 cho từng kịch bản:</p>",
       unsafe_allow_html=True,
   )
 
-  edited_scripts = st.text_area(
-      "Nội dung kịch bản thoại",
-      value=st.session_state.generated_scripts,
-      height=350,
-      label_visibility="collapsed",
-  )
-  st.session_state.generated_scripts = edited_scripts
+  # Cho phép chỉnh sửa tổng thể nếu muốn
+  with st.expander("✏️ Mở rộng để chỉnh sửa toàn bộ nội dung kịch bản gốc"):
+    edited_scripts = st.text_area(
+        "Nội dung kịch bản thoại",
+        value=st.session_state.generated_scripts,
+        height=300,
+    )
+    st.session_state.generated_scripts = edited_scripts
 
   st.markdown("<br>", unsafe_allow_html=True)
-  col_s1, col_s2 = st.columns(2)
 
-  if col_s1.button(
-      "➕ Gọi thêm 3 Kịch bản khác (Góc tiếp cận mới & Flash Sale)",
+  # Chia không gian hiển thị bằng 3 Tab tương ứng với 3 góc tiếp cận
+  tab1, tab2, tab3 = st.tabs([
+      "🎬 Kịch bản 1: Review Thực Tế",
+      "🚨 Kịch bản 2: Nỗi Đau / Kịch Tính",
+      "⚡ Kịch bản 3: Flash Sale Sốc",
+  ])
+
+  with tab1:
+    st.markdown("#### Góc Review Thực Tế / Xưởng Tận Gốc")
+    script_c1 = st.text_area(
+        "Chỉnh sửa Kịch bản 1",
+        value=st.session_state.generated_scripts,
+        height=220,
+        key="sc1",
+    )
+    if st.button(
+        "👉 Chốt Kịch bản 1 & Xuất Prompt Veo 3",
+        key="btn_c1",
+        type="primary",
+        use_container_width=True,
+    ):
+      with st.spinner("🤖 Đang tạo Prompt Veo 3 cho Kịch bản 1..."):
+        try:
+          if "GEMINI_API_KEY" in st.secrets:
+            genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+          else:
+            genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
+
+          model = genai.GenerativeModel("gemini-3.8-flash")
+          res_v = model.generate_content(
+              f"Dựa vào kịch bản sau, hãy chia thành N phân cảnh (mỗi cảnh 8 giây) và xuất Prompt Veo 3 đồng bộ tuyệt đối:\n{script_c1}"
+          )
+          st.session_state.veo_prompts = res_v.text
+          st.success("✅ Đã xuất Prompt Veo 3 cho Kịch bản 1 thành công!")
+          st.rerun()
+        except Exception as e:
+          st.error(f"Lỗi: {e}")
+
+  with tab2:
+    st.markdown("#### Góc Nỗi Đau & Tình Huống Kịch Tính")
+    script_c2 = st.text_area(
+        "Chỉnh sửa Kịch bản 2",
+        value=st.session_state.generated_scripts,
+        height=220,
+        key="sc2",
+    )
+    if st.button(
+        "👉 Chốt Kịch bản 2 & Xuất Prompt Veo 3",
+        key="btn_c2",
+        type="primary",
+        use_container_width=True,
+    ):
+      with st.spinner("🤖 Đang tạo Prompt Veo 3 cho Kịch bản 2..."):
+        try:
+          if "GEMINI_API_KEY" in st.secrets:
+            genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+          else:
+            genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
+
+          model = genai.GenerativeModel("gemini-3.8-flash")
+          res_v = model.generate_content(
+              f"Dựa vào kịch bản sau, hãy chia thành N phân cảnh (mỗi cảnh 8 giây) và xuất Prompt Veo 3 đồng bộ tuyệt đối:\n{script_c2}"
+          )
+          st.session_state.veo_prompts = res_v.text
+          st.success("✅ Đã xuất Prompt Veo 3 cho Kịch bản 2 thành công!")
+          st.rerun()
+        except Exception as e:
+          st.error(f"Lỗi: {e}")
+
+  with tab3:
+    st.markdown("#### Góc Flash Sale / Săn Sale Sốc")
+    script_c3 = st.text_area(
+        "Chỉnh sửa Kịch bản 3",
+        value=st.session_state.generated_scripts,
+        height=220,
+        key="sc3",
+    )
+    if st.button(
+        "👉 Chốt Kịch bản 3 & Xuất Prompt Veo 3",
+        key="btn_c3",
+        type="primary",
+        use_container_width=True,
+    ):
+      with st.spinner("🤖 Đang tạo Prompt Veo 3 cho Kịch bản 3..."):
+        try:
+          if "GEMINI_API_KEY" in st.secrets:
+            genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+          else:
+            genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
+
+          model = genai.GenerativeModel("gemini-3.8-flash")
+          res_v = model.generate_content(
+              f"Dựa vào kịch bản sau, hãy chia thành N phân cảnh (mỗi cảnh 8 giây) và xuất Prompt Veo 3 đồng bộ tuyệt đối:\n{script_c3}"
+          )
+          st.session_state.veo_prompts = res_v.text
+          st.success("✅ Đã xuất Prompt Veo 3 cho Kịch bản 3 thành công!")
+          st.rerun()
+        except Exception as e:
+          st.error(f"Lỗi: {e}")
+
+  st.markdown("<br>", unsafe_allow_html=True)
+  # Nút gọi thêm kịch bản mới
+  if st.button(
+      "➕ Gọi thêm 3 Kịch bản khác (Góc tiếp cận mới)",
       use_container_width=True,
   ):
     with st.spinner("🤖 AI đang sáng tạo thêm 3 góc tiếp cận mới..."):
@@ -375,10 +462,10 @@ if st.session_state.generated_scripts:
             else ""
         )
         extra_prompt = f"""
-                Hãy viết THÊM 3 kịch bản quảng cáo mới hoàn toàn cho sản phẩm này ở 3 góc tiếp cận:
-                1. Góc Flash Sale / Săn Sale sốc cuối tuần.
-                2. Góc So sánh chất lượng với thị trường.
-                3. Góc Trải nghiệm thực tế bất ngờ.
+                Hãy viết THÊM 3 kịch bản quảng cáo mới hoàn toàn cho sản phẩm này ở 3 góc tiếp cận khác:
+                1. Góc So sánh chất lượng với thị trường.
+                2. Góc Trải nghiệm thực tế bất ngờ của khách hàng.
+                3. Góc Chuyên gia ngành hàng phân tích.
                 {extra_notes_instruction}
                 Giữ nguyên nhịp đọc nhanh, khẩu ngữ dân dã, chia phân cảnh rõ ràng.
                 """
@@ -393,42 +480,6 @@ if st.session_state.generated_scripts:
         )
         st.success("Đã bổ sung thêm 3 kịch bản mới thành công!")
         st.rerun()
-      except Exception as e:
-        st.error(f"Lỗi: {e}")
-
-  if col_s2.button(
-      "👉 Chốt Kịch Bản & Xuất Prompt Veo 3 Đồng Bộ",
-      type="primary",
-      use_container_width=True,
-  ):
-    with st.spinner("🤖 Đang chia phân cảnh động và khóa đồng bộ 6 lớp..."):
-      try:
-        if "GEMINI_API_KEY" in st.secrets:
-          genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-        else:
-          genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
-
-        model = genai.GenerativeModel("gemini-3.8-flash")
-        prompt_veo = f"""
-                Dựa trên kịch bản đã duyệt sau đây:
-                {st.session_state.generated_scripts}
-                
-                Hãy chia thành N phân cảnh (mỗi cảnh 8 giây). 
-                Với mỗi phân cảnh, hãy xuất ra:
-                1. [IMAGE PROMPT - CẢNH X]: Prompt tiếng Anh tạo ảnh gốc (Start Frame) giữ nguyên [CHARACTER_LOCK], [WARDROBE_LOCK], [BACKGROUND_LOCK], [PRODUCT_SCALE_&_COLOR_LOCK].
-                2. [VEO 3 VIDEO PROMPT - CẢNH X]: Prompt tiếng Anh cho Veo 3 có gắn sẵn chuẩn giọng Hà Nội phù hợp, câu thoại tiếng Việt chuẩn trong ngoặc kép (đã phiên âm số/từ viết tắt thành chữ), kỹ thuật đọc ngoài khung hình (out-of-frame) cho cảnh cận, và âm thanh môi trường SFX.
-                """
-        res_v = model.generate_content(prompt_veo)
-        st.session_state.veo_prompts = res_v.text
-        save_project_db(
-            st.session_state.current_project_name,
-            "Đã xuất Prompt Veo 3",
-            st.session_state.generated_scripts,
-            status="Hoàn thành Prompt Veo 3",
-        )
-        st.success(
-            "✅ Đã chia phân cảnh và xuất toàn bộ Prompt Veo 3 thành công!"
-        )
       except Exception as e:
         st.error(f"Lỗi: {e}")
 
