@@ -287,8 +287,8 @@ if analyze_btn:
         else:
           genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
 
-        # Sử dụng model gemini-2.5-flash chuẩn mới nhất để tránh lỗi 404
-        model = genai.GenerativeModel("gemini-2.5-flash")
+        # Cập nhật chuẩn theo yêu cầu API mới nhất của Google
+        model = genai.GenerativeModel("gemini-3.8-flash")
 
         contents = [Image.open(img) for img in product_images]
 
@@ -368,7 +368,7 @@ if st.session_state.generated_scripts:
         else:
           genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
 
-        model = genai.GenerativeModel("gemini-2.5-flash")
+        model = genai.GenerativeModel("gemini-3.8-flash")
         extra_notes_instruction = (
             f"\n\n🚨 GHI CHÚ ƯU TIÊN CAO NHẤT TỪ NGƯỜI DÙNG: '{user_notes}'."
             if user_notes.strip()
@@ -408,7 +408,7 @@ if st.session_state.generated_scripts:
         else:
           genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
 
-        model = genai.GenerativeModel("gemini-2.5-flash")
+        model = genai.GenerativeModel("gemini-3.8-flash")
         prompt_veo = f"""
                 Dựa trên kịch bản đã duyệt sau đây:
                 {st.session_state.generated_scripts}
