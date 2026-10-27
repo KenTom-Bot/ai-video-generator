@@ -165,8 +165,12 @@ if "script_2" not in st.session_state:
   st.session_state.script_2 = None
 if "script_3" not in st.session_state:
   st.session_state.script_3 = None
-if "prompt_data" not in st.session_state:
-  st.session_state.prompt_data = None
+if "prompts_s1" not in st.session_state:
+  st.session_state.prompts_s1 = None
+if "prompts_s2" not in st.session_state:
+  st.session_state.prompts_s2 = None
+if "prompts_s3" not in st.session_state:
+  st.session_state.prompts_s3 = None
 
 # --- 4. THANH ĐIỀU HƯỚNG (SIDEBAR) & LỊCH SỬ DỰ ÁN ---
 st.sidebar.markdown(
@@ -185,7 +189,9 @@ if st.sidebar.button(
   st.session_state.script_1 = None
   st.session_state.script_2 = None
   st.session_state.script_3 = None
-  st.session_state.prompt_data = None
+  st.session_state.prompts_s1 = None
+  st.session_state.prompts_s2 = None
+  st.session_state.prompts_s3 = None
   st.rerun()
 
 st.sidebar.divider()
@@ -456,12 +462,12 @@ if st.session_state.analysis_col1:
   )
   st.markdown("<br>", unsafe_allow_html=True)
 
-  # --- HÀM HỖ TRỢ XUẤT PROMPT TỪNG KỊCH BẢN ---
-  def handle_script_section(script_title, script_content, key_suffix):
+  # --- HÀM XỬ LÝ HIỂN THỊ KỊCH BẢN VÀ PROMPT 2 CỘT GỌN GÀNG (TÍCH HỢP KHẨU HÌNH THOẠI) ---
+  def handle_script_section(script_title, script_content, state_key):
     st.markdown(script_content)
     
-    if st.button(f"👉 Tạo Prompt Ảnh & Video cho {script_title}", key=f"btn_{key_suffix}", type="primary", use_container_width=True):
-      with st.spinner(f"🤖 Đang dịch thuật và tạo Prompt Ảnh & Video cho {script_title}..."):
+    if st.button(f"👉 Tạo Prompt Ảnh & Video cho {script_title}", key=f"btn_{state_key}", type="primary", use_container_width=True):
+      with st.spinner(f"🤖 Đang tạo Prompt chuẩn Ảnh & Video (Kèm khẩu hình thoại nhân vật) cho {script_title}..."):
         try:
           if "GEMINI_API_KEY" in st.secrets:
             genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
@@ -469,40 +475,67 @@ if st.session_state.analysis_col1:
             genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
           model = genai.GenerativeModel("gemini-3.8-flash")
           res = model.generate_content(
-              f"Dựa vào kịch bản sau, hãy trích xuất ra các câu lệnh (Prompt) chuẩn bằng tiếng Anh cho từng phân cảnh:\n"
-              f"1. Prompt Ảnh tĩnh (Midjourney/Flux) cho phân cảnh.\n"
-              f"2. Prompt Video (Veo 3 Pro - mượt mà, chống vấp thoại) cho phân cảnh.\n"
-              f"Định dạng trả về rõ ràng từng phân cảnh gồm: [CẢNH X] - Prompt Ảnh và Prompt Video riêng biệt, tuyệt đối không text, không logo.\n\n{script_content}"
+              f"Dựa vào kịch bản sau, hãy xuất ra Prompt chuẩn bằng tiếng Anh cho từng phân cảnh:\n"
+              f"1. Prompt Ảnh tĩnh (Midjourney/Flux) (Nghiêm ngặt: không text, không logo).\n"
+              f"2. Prompt Video (Veo 3 Pro) (Nghiêm ngặt: không text, không logo, không nhạc nền; ĐẶC BIỆT: Mô tả nhân vật đang cất lời thoại với khẩu hình miệng mấp máy khớp nội dung lời thoại của phân cảnh).\n"
+              f"Hãy trả về kết quả tuân thủ đúng định dạng:\n"
+              f"### CẢNH 1\n"
+              f"IMG_PROMPT: [Nội dung prompt ảnh cảnh 1]\n"
+              f"VID_PROMPT: [Nội dung prompt video cảnh 1 kèm khẩu hình thoại]\n\n"
+              f"### CẢNH 2\n"
+              f"IMG_PROMPT: [Nội dung prompt ảnh cảnh 2]\n"
+              f"VID_PROMPT: [Nội dung prompt video cảnh 2 kèm khẩu hình thoại]\n\n"
+              f"### CẢNH 3\n"
+              f"IMG_PROMPT: [Nội dung prompt ảnh cảnh 3]\n"
+              f"VID_PROMPT: [Nội dung prompt video cảnh 3 kèm khẩu hình thoại]\n\n{script_content}"
           )
-          st.session_state[f"prompts_{key_suffix}"] = res.text
-          st.success(f"✅ Đã tạo xong Prompt cho {script_title}!")
+          st.session_state[state_key] = res.text
+          st.success(f"✅ Đã tạo xong Prompt tích hợp thoại cho {script_title}!")
           st.rerun()
         except Exception as e:
           st.error(f"Lỗi: {e}")
 
-    # Hiển thị khu vực prompt 2 cột nếu đã được tạo
-    if st.session_state.get(f"prompts_{key_suffix}"):
-      st.markdown(f"#### 🎯 Bộ Prompt Chi Tiết Cho {script_title}")
-      st.markdown("Dưới đây là các prompt được chia theo từng cặp Ảnh & Video gọn gàng, dễ nhìn, dễ copy:")
+    # Nếu đã có prompt, hiển thị giao diện 2 cột đối xứng cho từng cảnh gọn gàng
+    p_text = st.session_state.get(state_key)
+    if p_text:
+      st.markdown(f"<br><h4>🎯 Bộ Prompt Tinh Gọn (Kèm Khẩu Hình Thoại) Cho {script_title}</h4>", unsafe_allow_html=True)
       
-      # Hiển thị trực tiếp nội dung dạng text hoặc chia nhỏ để copy nhanh
-      st.text_area(
-          f"Nội dung Prompt Ảnh & Video ({script_title})",
-          value=st.session_state[f"prompts_{key_suffix}"],
-          height=250,
-          key=f"ta_{key_suffix}"
-      )
+      scenes = p_text.split("### CẢNH")
+      for sc in scenes[1:]:
+        lines = sc.strip().split("\n")
+        c_num = lines[0].strip()
+        
+        img_p = ""
+        vid_p = ""
+        for l in lines:
+          if l.startswith("IMG_PROMPT:"):
+            img_p = l.replace("IMG_PROMPT:", "").strip()
+          elif l.startswith("VID_PROMPT:"):
+            vid_p = l.replace("VID_PROMPT:", "").strip()
+
+        st.markdown(f"**📍 Phân cảnh {c_num}**")
+        p_col1, p_col2 = st.columns(2)
+        
+        with p_col1:
+          st.markdown("📷 **Prompt Ảnh Tĩnh (Midjourney / Flux):**")
+          st.code(img_p if img_p else sc, language="text")
+
+        with p_col2:
+          st.markdown("🎥 **Prompt Video (Veo 3 Pro - Kèm Khẩu Hình Thoại):**")
+          st.code(vid_p if vid_p else "Đang cập nhật...", language="text")
+        
+        st.markdown("---")
 
   # --- KỊCH BẢN 1 ---
-  handle_script_section("Kịch bản 1", st.session_state.script_1, "s1")
+  handle_script_section("Kịch bản 1", st.session_state.script_1, "prompts_s1")
   st.markdown("<br><hr><br>", unsafe_allow_html=True)
 
   # --- KỊCH BẢN 2 ---
-  handle_script_section("Kịch bản 2", st.session_state.script_2, "s2")
+  handle_script_section("Kịch bản 2", st.session_state.script_2, "prompts_s2")
   st.markdown("<br><hr><br>", unsafe_allow_html=True)
 
   # --- KỊCH BẢN 3 ---
-  handle_script_section("Kịch bản 3", st.session_state.script_3, "s3")
+  handle_script_section("Kịch bản 3", st.session_state.script_3, "prompts_s3")
 
   st.markdown("<br>", unsafe_allow_html=True)
   st.markdown("---")
